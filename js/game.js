@@ -470,6 +470,28 @@ const Game = (() => {
       loadLevel(0);
     });
 
+    // Bölüm seç butonları (doğrudan o bölümü dene)
+    const lsEl = document.getElementById('level-select');
+    if (lsEl && lsEl.appendChild) {
+      LEVELS.forEach((lv, i) => {
+        const b = document.createElement('button');
+        b.className = 'lvl-btn';
+        b.textContent = String(i + 1);
+        b.title = lv.name;
+        b.addEventListener('click', () => { el.overlay.classList.add('hidden'); loadLevel(i); });
+        lsEl.appendChild(b);
+      });
+    }
+
+    // URL ile doğrudan bölüm aç: ?level=N (ör. .../index.html?level=7)
+    const loc = (typeof location !== 'undefined') ? location : { search: '', hash: '' };
+    const m = (loc.search || '').match(/[?&]level=(\d+)/) || (loc.hash || '').match(/#(\d+)/);
+    if (m) {
+      const idx = Math.min(LEVELS.length, Math.max(1, parseInt(m[1], 10))) - 1;
+      el.overlay.classList.add('hidden');
+      loadLevel(idx);
+    }
+
     requestAnimationFrame(frame);
   }
 

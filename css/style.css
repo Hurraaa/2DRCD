@@ -122,6 +122,22 @@ button {
 }
 button:active { transform: translateY(4px); box-shadow: 0 1px 0 #b07a18; }
 
+.ls-label { margin-top: 16px; font-size: 14px; opacity: .8; }
+.level-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+  max-width: 320px;
+}
+.lvl-btn {
+  width: 46px; height: 46px;
+  margin: 0; padding: 0;
+  font-size: 18px;
+  box-shadow: 0 3px 0 #b07a18;
+}
+
 /* Touch controls */
 #touch-controls {
   position: absolute;

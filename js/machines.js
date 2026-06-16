@@ -640,13 +640,63 @@ const Machines = (() => {
     }
   }
 
+  /* --- Sahte bayrak: gerçek hedefe benzer; yaklaşınca taban çivileri fırlar --- */
+  class DecoyFlag {
+    constructor(d) {
+      this.x = d.x; this.y = d.y;              // direk konumu (goal gibi)
+      this.groundY = d.groundY || 500;
+      this.span = d.span || 96;
+      this.tx1 = (d.triggerX1 != null) ? d.triggerX1 : this.x - 70;
+      this.tx2 = (d.triggerX2 != null) ? d.triggerX2 : this.x + 70;
+      this.state = 'idle'; this.ext = 0; this.timer = 0; this.lean = 0;
+    }
+    reset() { this.state = 'idle'; this.ext = 0; this.timer = 0; this.lean = 0; }
+    update(world) {
+      const p = world.player;
+      if (this.state === 'idle') {
+        if (p.cx > this.tx1 && p.cx < this.tx2) { this.state = 'spring'; this.timer = 6; }
+      } else if (this.state === 'spring') {
+        if (--this.timer <= 0) this.state = 'up';
+      } else if (this.state === 'up') {
+        this.ext = Math.min(30, this.ext + 6);
+        this.lean = Math.min(0.5, this.lean + 0.06);   // bayrak yana devrilir (tuzak ortaya çıkar)
+      }
+    }
+    deadlyRects() {
+      return this.ext > 4 ? [{ x: this.x - this.span / 2, y: this.groundY - this.ext, w: this.span, h: this.ext }] : [];
+    }
+    draw(ctx) {
+      // Gerçek bayrağa benzer (aldatma)
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.lean);
+      ctx.fillStyle = '#cfcfcf'; ctx.fillRect(0, -10, 5, this.groundY - this.y + 10);
+      ctx.fillStyle = '#888'; ctx.beginPath(); ctx.arc(2.5, -10, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e8413a';
+      ctx.beginPath(); ctx.moveTo(5, 0); ctx.lineTo(35, 8); ctx.lineTo(5, 20); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      // Tetiklenince taban çivileri
+      if (this.ext > 0) {
+        ctx.fillStyle = '#9aa0a6';
+        const n = 6, bw = this.span / n, bx = this.x - this.span / 2;
+        for (let i = 0; i < n; i++) {
+          ctx.beginPath();
+          ctx.moveTo(bx + i * bw, this.groundY);
+          ctx.lineTo(bx + i * bw + bw / 2, this.groundY - this.ext);
+          ctx.lineTo(bx + (i + 1) * bw, this.groundY);
+          ctx.closePath(); ctx.fill();
+        }
+      }
+    }
+  }
+
   const registry = {
     pendulum: Pendulum, pulley: Pulley, conveyor: Conveyor,
     spring: Spring, movingPlatform: MovingPlatform, crusher: Crusher,
     boulder: Boulder, spikewall: SpikeWall, sawblade: Sawblade, seesaw: Seesaw,
     // Aldatıcı tuzaklar
     fakeTile: FakeTile, fallingRock: FallingRock, popSpikes: PopSpikes,
-    dartTrap: DartTrap, iceFloor: IceFloor
+    dartTrap: DartTrap, iceFloor: IceFloor, decoyFlag: DecoyFlag
   };
 
   function create(def) {

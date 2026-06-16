@@ -26,8 +26,8 @@ function makeEl() {
   return {
     getContext: () => makeCtx(),
     addEventListener() {}, removeEventListener() {},
-    classList: { add() {}, remove() {} },
-    dataset: {}, style: {}, textContent: '',
+    classList: { add() {}, remove() {}, toggle() {} },
+    appendChild() {}, dataset: {}, style: {}, textContent: '', title: '',
     width: 960, height: 540,
   };
 }
@@ -37,9 +37,11 @@ const sandbox = {
   console,
   Math, Date, JSON, parseInt, parseFloat, isNaN,
   requestAnimationFrame: () => 0,      // döngüyü otomatik başlatma
+  location: { search: '', hash: '' },
   document: {
     getElementById: () => makeEl(),
     querySelectorAll: () => [],
+    createElement: () => makeEl(),
     addEventListener() {},
   },
   window: {
