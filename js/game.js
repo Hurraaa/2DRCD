@@ -18,6 +18,7 @@ class World {
     this.spikes = (def.spikes || []).map(s => ({ ...s }));
     this.goal = { ...def.goal };
     this.machines = (def.machines || []).map(m => Machines.create(m)).filter(Boolean);
+    this.checkpoints = (def.checkpoints || []).map(c => ({ x: c.x, y: c.y, reached: false }));
     this.player = new Player(def.spawn.x, def.spawn.y);
     this.solidsThisFrame = [];
     this.slopesThisFrame = [];
@@ -89,6 +90,19 @@ class World {
     // Oyuncu
     p.update(this);
 
+    // Ara kayıt (checkpoint): değince yeniden doğma noktası güncellenir
+    for (const c of this.checkpoints) {
+      if (!c.reached && Engine.aabb(p.x, p.y, p.w, p.h, c.x - 18, c.y - 50, 36, 60)) {
+        c.reached = true;
+        p.spawnX = c.x - p.w / 2;
+        p.spawnY = c.y - p.h;
+        for (let i = 0; i < 12; i++) this.particles.push({
+          x: c.x, y: c.y - 20, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 4 - 1,
+          life: 30 + Math.random() * 20, c: '#5fae3f'
+        });
+      }
+    }
+
     if (p.dead || p.won) return;
 
     // --- Ölümcül çarpışmalar ---
@@ -152,6 +166,7 @@ class World {
     for (const r of this.ropesH) this._drawRopeH(ctx, r);
     for (const s of this.spikes) this._drawSpikes(ctx, s);
     for (const m of this.machines) if (m.draw) m.draw(ctx);
+    for (const c of this.checkpoints) this._drawCheckpoint(ctx, c);
     this._drawGoal(ctx, this.goal);
 
     // parçacıklar
@@ -315,6 +330,27 @@ class World {
       ctx.lineTo(s.x + i * bw + bw * 0.42, s.y + s.h - 4);
       ctx.stroke();
     }
+  }
+
+  _drawCheckpoint(ctx, c) {
+    // direk
+    ctx.fillStyle = '#9aa0a6';
+    ctx.fillRect(c.x - 2, c.y - 46, 4, 46);
+    // bayrak: ulaşılmadıysa gri (sönük), ulaşıldıysa yeşil (dalgalı)
+    const sway = c.reached ? Math.sin(Date.now() / 180) * 4 : 0;
+    ctx.fillStyle = c.reached ? '#5fae3f' : '#7c828a';
+    ctx.beginPath();
+    ctx.moveTo(c.x + 2, c.y - 44);
+    ctx.lineTo(c.x + 26, c.y - 38 + sway);
+    ctx.lineTo(c.x + 2, c.y - 28);
+    ctx.closePath(); ctx.fill();
+    if (c.reached) {
+      ctx.fillStyle = '#eafff0'; ctx.font = 'bold 11px sans-serif';
+      ctx.fillText('✓', c.x + 8, c.y - 35);
+    }
+    // taban
+    ctx.fillStyle = '#666';
+    ctx.fillRect(c.x - 6, c.y - 3, 12, 3);
   }
 
   _drawGoal(ctx, g) {

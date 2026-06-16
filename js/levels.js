@@ -178,6 +178,7 @@ const LEVELS = [
     ],
     slopes: [],
     ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1500, y: 500 } ],          // S1'de: aldatma bölümü öncesi ara kayıt
     spikes: [
       { x: 360, y: 560, w: 1040, h: 70 },          // Bölüm A çukuru (360..1400) — tek yol taşlar
       { x: 1620, y: 560, w: 420, h: 70 },          // Bölüm B çukuru (1620..2040)

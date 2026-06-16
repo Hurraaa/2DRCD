@@ -242,5 +242,23 @@ for (let li = 0; li < LEVELS.length; li++) {
   console.log(`  Kaya fizik testi: zemine temas=${contactOk} • yokuş indi=${rolledDown} • reset=${Math.abs(b.x - b.startX) < 1}`);
 })();
 
+// --- Checkpoint: değince yeniden doğma noktası güncellenir, ölünce oradan başlar ---
+(function checkpointTest() {
+  const world = new World(LEVELS[6]);            // Bölüm 7 (S1'de checkpoint var)
+  const p = world.player;
+  const origSpawnX = p.spawnX;
+  // oyuncuyu checkpoint bölgesine taşı (x~1500, S1 üstü)
+  p.x = 1495; p.y = 454; p.vx = 0; p.vy = 0;
+  world.update();                                // checkpoint algılanır
+  const cp = world.checkpoints[0];
+  check(cp.reached, 'Checkpoint değince işaretlenmedi');
+  check(p.spawnX !== origSpawnX && Math.abs(p.spawnX - (1500 - p.w / 2)) < 2, 'Checkpoint spawn noktasını güncellemedi');
+  // şimdi öldür → checkpoint'ten doğmalı
+  world.kill();
+  p.reset();
+  check(Math.abs(p.x - (1500 - p.w / 2)) < 2, 'Ölünce checkpoint yerine doğmadı');
+  console.log(`  Checkpoint testi: işaretlendi=${cp.reached} • spawn=${Math.round(p.spawnX)} (S0 değil)`);
+})();
+
 if (failures === 0) console.log('\n✓ Tüm bölümler çökmeden çalıştı, NaN yok.');
 else { console.log(`\n✗ ${failures} sorun bulundu.`); process.exit(1); }
