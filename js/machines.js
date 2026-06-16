@@ -255,10 +255,12 @@ const Machines = (() => {
       this.solid.carry.dy = this.y - prevY;
       this.solid.y = this.y;
     }
-    getSolid() { return this.solid; }
+    // İnerken (smashing) KATI DEĞİL — oyuncuyu tepesine taşımaz; gövdesi ezer.
+    // Yukarıdayken katı (üstüne basılır / tavan görevi görür).
+    getSolid() { return this.smashing ? null : this.solid; }
     deadlyRects() {
-      // ezerken alt yüzü ölümcül
-      return this.smashing ? [{ x: this.x + 3, y: this.y + this.h - 10, w: this.w - 6, h: 14 }] : [];
+      // ezerken TÜM gövde ölümcül (sadece alt bant değil — yoksa yerdeki oyuncuyu ıskalar)
+      return this.smashing ? [{ x: this.x + 3, y: this.y + 8, w: this.w - 6, h: this.h - 8 }] : [];
     }
     draw(ctx) {
       // raylar

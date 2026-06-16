@@ -28,6 +28,7 @@ class Player {
     this.standingOn = null;
     this.lastGroundY = this.spawnY + this.h;   // gölge için son zemin seviyesi
     this.hangCooldown = 0;                      // halat bırakınca yeniden tutunma gecikmesi
+    this.launched = false;                      // yay/fırlatma ile yükseliş (kesme uygulanmaz)
     // --- Canlılık (premium) ---
     this.squash = 0;        // iniş ezilmesi (0..1), söner
     this.lag = 0;           // ikincil hareket: gövdeden gecikmeli (bıyık/ter/göbek)
@@ -133,9 +134,10 @@ class Player {
         this.jumpBuffer = 0;
         this.coyote = 0;
         this.grounded = false;
+        this.launched = false;          // kendi zıplaması → kesilebilir (değişken yükseklik)
       }
-      // Kısa zıplama (tuşu bırakınca)
-      if (!inp.jump && this.vy < -4) this.vy = -4;
+      // Kısa zıplama (tuşu bırakınca) — yay/fırlatma ile gelen hızı KESME
+      if (!this.launched && !inp.jump && this.vy < -4) this.vy = -4;
 
       if (this.jumpBuffer > 0) this.jumpBuffer--;
 
@@ -191,7 +193,7 @@ class Player {
 
       this.grounded = r.grounded;
       this.standingOn = r.platform;
-      if (r.grounded) this.lastGroundY = this.y + this.h;   // gölgeyi zemine sabitle
+      if (r.grounded) { this.lastGroundY = this.y + this.h; this.launched = false; }  // yere inince kesme yeniden aktif
       if (r.grounded) this.coyote = 7;
       else if (this.coyote > 0) this.coyote--;
 
@@ -200,10 +202,11 @@ class Player {
       if (r.grounded && r.platform && r.platform.conveyor) {
         this.x += r.platform.conveyor;
       }
-      // Yay / zıplama pedi
+      // Yay / zıplama pedi — fırlatma kesilmez (launched)
       if (r.grounded && r.platform && r.platform.spring) {
         this.vy = -r.platform.spring;
         this.grounded = false;
+        this.launched = true;
         r.platform.springAnim = 1;
       }
     } else {

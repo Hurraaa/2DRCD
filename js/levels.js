@@ -433,7 +433,7 @@ const LEVELS = [
       { x: 1810, y: 500, w: 400, h: 160 },          // boşluk sonrası güvenli final (1810..2210)
     ],
     slopes: [], ladders: [], ropesV: [], ropesH: [],
-    checkpoints: [ { x: 1870, y: 500 } ],
+    checkpoints: [],                                 // kovalama tek parça tehlike; sonuna cp koymak anlamsız
     spikes: [
       { x: 1680, y: 560, w: 130, h: 70 },           // gerçek boşluk — kaya buraya düşüp durur
     ],
@@ -445,5 +445,29 @@ const LEVELS = [
       { type: 'popSpikes', x: 1350, y: 474, w: 60 },
     ],
     goal: { x: 2080, y: 440, w: 30, h: 60 },
+  },
+
+  /* ---------- BÖLÜM 16: Yukarı Kaçış (boulder + spring kombinasyonu) ----------
+     Yatay kovalayan kayadan DİKEY kaçış: koşunun sonundaki yaya bas,
+     yukarı fırla, güvenli ledge'e çık (kaya yukarı gelemez). */
+  {
+    name: 'Yukarı Kaçış',
+    hint: 'Kaya kovalıyor — koş! Sondaki YAYA bas, yukarı fırlayıp güvenli platforma çık',
+    width: 1640, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 420, h: 160 },          // S0 (..380)
+      { x: 380, y: 500, w: 700, h: 160 },          // kovalama koşusu — YAYDA biter (380..1080)
+      { x: 1180, y: 300, w: 360, h: 16 },           // üst güvenli ledge (ince — yükselen oyuncuyu duvar gibi durdurmasın)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [],
+    spikes: [],
+    machines: [
+      { type: 'boulder', x: 330, y: 474, r: 26, triggerX: 400, endX: 1080, speed: 3.6 },
+      { type: 'popSpikes', x: 700, y: 474, w: 60 },  // kaçarken bir yama
+      { type: 'spring', x: 1080, y: 500, w: 90, power: 18 }, // koşu zemini burada bitti → oyuncu yaya geçip tetikler
+    ],
+    goal: { x: 1400, y: 240, w: 30, h: 60 },         // üst ledge'de
   },
 ];
