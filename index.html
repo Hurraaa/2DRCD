@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Bubi Tuzağı — Fizik Macerası</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="game-wrap">
+    <canvas id="game" width="960" height="540"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div class="hud-left">
+        <span id="hud-level">Bölüm 1</span>
+        <span id="hud-name"></span>
+      </div>
+      <div class="hud-right">
+        <span id="hud-deaths">Ölüm: 0</span>
+      </div>
+    </div>
+
+    <!-- Alt ipucu -->
+    <div id="hint"></div>
+
+    <!-- Başlangıç ekranı -->
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <h1>BUBİ TUZAĞI</h1>
+        <p class="sub">Fizik &amp; Basit Makineler Macerası</p>
+        <div class="controls">
+          <p><b>← →</b> veya <b>A D</b> : Yürü</p>
+          <p><b>↑</b> / <b>Boşluk / W</b> : Zıpla</p>
+          <p><b>↑ ↓</b> : Merdiven / Halat tırman</p>
+          <p><b>R</b> : Bölümü yeniden başlat</p>
+        </div>
+        <button id="start-btn">BAŞLA</button>
+      </div>
+    </div>
+
+    <!-- Bölüm geçiş ekranı -->
+    <div id="level-clear" class="overlay hidden">
+      <div class="panel">
+        <h1 id="clear-title">BÖLÜM TAMAM!</h1>
+        <p id="clear-stats" class="sub"></p>
+        <button id="next-btn">SONRAKİ BÖLÜM →</button>
+      </div>
+    </div>
+
+    <!-- Oyun bitti / tebrikler -->
+    <div id="win-screen" class="overlay hidden">
+      <div class="panel">
+        <h1>🏆 TEBRİKLER!</h1>
+        <p class="sub">Tüm bölümleri tamamladın.</p>
+        <p id="win-stats" class="sub"></p>
+        <button id="restart-all-btn">BAŞTAN OYNA</button>
+      </div>
+    </div>
+
+    <!-- Mobil dokunmatik kontroller -->
+    <div id="touch-controls">
+      <div class="pad-left">
+        <button class="tbtn" data-key="left">◀</button>
+        <button class="tbtn" data-key="right">▶</button>
+      </div>
+      <div class="pad-right">
+        <button class="tbtn" data-key="up">▲</button>
+        <button class="tbtn jump" data-key="jump">ZIPLA</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/machines.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
