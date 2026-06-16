@@ -418,4 +418,32 @@ const LEVELS = [
     ],
     goal: { x: 2040, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 15: Kaçış (boulder + popSpikes kombinasyonu) ----------
+     Kovalayan kayadan kaçarken yerden çivi yamalarını YAVAŞLAMADAN zıpla.
+     Duramazsın (kaya yakalar) ama yamaları da idare etmelisin. */
+  {
+    name: 'Kaçış',
+    hint: 'Kaya kovalıyor — DURMA! Kaçarken yerden fırlayan çivi yamalarını üstünden zıpla',
+    width: 2330, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 420, h: 160 },          // S0 (..380)
+      { x: 380, y: 500, w: 1300, h: 160 },          // kovalama koşusu (380..1680)
+      { x: 1810, y: 500, w: 400, h: 160 },          // boşluk sonrası güvenli final (1810..2210)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1870, y: 500 } ],
+    spikes: [
+      { x: 1680, y: 560, w: 130, h: 70 },           // gerçek boşluk — kaya buraya düşüp durur
+    ],
+    machines: [
+      { type: 'boulder', x: 330, y: 474, r: 26, triggerX: 400, endX: 1660, speed: 3.8 },
+      { type: 'popSpikes', x: 600,  y: 474, w: 60 },
+      { type: 'popSpikes', x: 850,  y: 474, w: 60 },
+      { type: 'popSpikes', x: 1100, y: 474, w: 60 },
+      { type: 'popSpikes', x: 1350, y: 474, w: 60 },
+    ],
+    goal: { x: 2080, y: 440, w: 30, h: 60 },
+  },
 ];
