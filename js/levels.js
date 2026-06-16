@@ -360,29 +360,27 @@ const LEVELS = [
      İlk kombinasyon: yukarıdan taş (DURMA) + aşağıdan çivi (ÜSTÜNDEN ZIPLA). */
   {
     name: 'Taş ve Çivi',
-    hint: 'Yukarıdan taş düşer (durma), aşağıdan çivi fırlar (üstünden zıpla) — ikisini birden idare et',
-    width: 2090, height: 680,
+    hint: 'Yamaları ÜSTÜNDEN ZIPLA; yola düşen kayalar için DUR-bekle-geç — iki farklı refleks',
+    width: 2400, height: 680,
     spawn: { x: 60, y: 440 },
     solids: [
       { x: -40, y: 500, w: 420, h: 160 },          // S0 (..380)
-      { x: 380, y: 500, w: 900, h: 160 },          // koridor (380..1280)
-      { x: 1410, y: 500, w: 560, h: 160 },          // çarpıt + final (1410..1970)
+      { x: 380, y: 500, w: 1000, h: 160 },          // koridor (380..1380)
+      { x: 1510, y: 500, w: 720, h: 160 },          // çarpıt + final (1510..2230)
     ],
     slopes: [], ladders: [], ropesV: [], ropesH: [],
-    checkpoints: [ { x: 1480, y: 500 } ],
+    checkpoints: [ { x: 1560, y: 500 } ],
     spikes: [
-      { x: 1280, y: 560, w: 130, h: 70 },           // gerçek boşluk (1280..1410)
+      { x: 1380, y: 560, w: 130, h: 70 },           // gerçek boşluk (1380..1510)
     ],
     machines: [
-      { type: 'popSpikes', x: 540, y: 474, w: 60 },
-      { type: 'fallingRock', x: 720, topY: 80, groundY: 500, triggerX: 720, r: 24, delay: 18 },
-      { type: 'popSpikes', x: 900, y: 474, w: 60 },
-      { type: 'fallingRock', x: 1080, topY: 80, groundY: 500, triggerX: 1080, r: 24, delay: 16 },
-      // ÇARPIT: yama + hemen ardından taş (zıpla ve durma)
-      { type: 'popSpikes', x: 1540, y: 474, w: 60 },
-      { type: 'fallingRock', x: 1680, topY: 80, groundY: 500, triggerX: 1680, r: 24, delay: 14 },
+      // Net ayrılmış bölgeler: yama (ZIPLA) → kaya (DUR-geç) → [boşluk] → yama → kaya
+      { type: 'popSpikes', x: 560, y: 474, w: 60 },                                              // A: yama
+      { type: 'fallingRock', x: 1000, topY: 80, groundY: 500, triggerX: 824, r: 24, delay: 8 },  // B: kaya
+      { type: 'popSpikes', x: 1720, y: 474, w: 60 },                                             // C: yama
+      { type: 'fallingRock', x: 2080, topY: 80, groundY: 500, triggerX: 1904, r: 24, delay: 8 }, // D: kaya
     ],
-    goal: { x: 1870, y: 440, w: 30, h: 60 },
+    goal: { x: 2180, y: 440, w: 30, h: 60 },
   },
 
   /* ---------- BÖLÜM 14: Çifte Ritim (pendulum + crusher kombinasyonu) ----------
