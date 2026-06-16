@@ -51,64 +51,79 @@ const Machines = (() => {
     }
   }
 
-  /* --- Makara / Asansör (pulley): iki platform, ağırlık dengesi --- */
+  /* --- Makaralı asansör (pulley): TEK binilen platform + karşı ağırlık sandığı.
+         Üstüne bas → karşı ağırlık iner, sen yukarı çıkarsın. Boşken geri iner. --- */
   class Pulley {
     constructor(d) {
-      this.lx = d.leftX; this.rx = d.rightX;
-      this.topY = d.topY;
-      this.baseY = d.baseY;            // platformların dinlenme yüksekliği
-      this.range = d.range || 150;
-      this.w = d.platW || 70;
+      this.rideX = d.leftX;            // binilen platform x
+      this.weX = (d.weightX != null) ? d.weightX : d.rightX;  // karşı ağırlık x
+      this.topY = d.topY;              // makara çarkı yüksekliği
+      this.baseY = d.baseY;            // platformun dinlenme (alt) yüksekliği
+      this.range = d.range || 170;     // yükselme mesafesi
+      this.w = d.platW || 84;
       this.h = 14;
-      this.offset = 0;                 // + : sol aşağı / sağ yukarı
-      this.left = this._solid(this.lx, this.baseY + this.offset);
-      this.right = this._solid(this.rx, this.baseY - this.offset);
-      this.left._prevY = this.left.y; this.right._prevY = this.right.y;
-    }
-    _solid(x, y) {
-      return { x, y, w: this.w, h: this.h, carry: { dx: 0, dy: 0 } };
+      this.offset = 0;                 // 0..range (yukarı)
+      this.ride = { x: this.rideX, y: this.baseY, w: this.w, h: this.h, carry: { dx: 0, dy: 0 } };
+      this.weW = 30; this.weH = 30;    // sandık boyutu
     }
     update(world) {
-      const p = world.player;
-      const onLeft = p.standingOn === this.left;
-      const onRight = p.standingOn === this.right;
-      // Üzerine binilen platform YUKARI kalkar (karşı taraf iner — denge)
-      let target = this.offset;
-      if (onLeft) target = -this.range;
-      else if (onRight) target = this.range;
-      else target *= 0.92;
-      this.offset += (target - this.offset) * 0.12;
-
-      const ly = this.baseY + this.offset;
-      const ry = this.baseY - this.offset;
-      this.left.carry.dy = ly - this.left.y;
-      this.right.carry.dy = ry - this.right.y;
-      this.left.y = ly; this.right.y = ry;
+      const onRide = world.player.standingOn === this.ride;
+      const target = onRide ? this.range : 0;
+      this.offset += (target - this.offset) * 0.1;
+      if (Math.abs(target - this.offset) < 0.4) this.offset = target;  // tepede/altta kilitle
+      const ny = this.baseY - this.offset;
+      this.ride.carry.dy = ny - this.ride.y;
+      this.ride.y = ny;
     }
-    getSolids() { return [this.left, this.right]; }
+    getSolids() { return [this.ride]; }
+    _wheel(ctx, cxw) {
+      ctx.fillStyle = '#5a5a5a';
+      ctx.beginPath(); ctx.arc(cxw, this.topY, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#8a8a8a';
+      ctx.beginPath(); ctx.arc(cxw, this.topY, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#3a3a3a';
+      ctx.beginPath(); ctx.arc(cxw, this.topY, 2.2, 0, Math.PI * 2); ctx.fill();
+    }
     draw(ctx) {
-      // makara çarkı
-      const midX = (this.lx + this.rx) / 2 + this.w / 2;
-      ctx.fillStyle = '#666';
-      ctx.beginPath(); ctx.arc(this.lx + this.w / 2, this.topY, 12, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(this.rx + this.w / 2, this.topY, 12, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#999';
-      ctx.beginPath(); ctx.arc(this.lx + this.w / 2, this.topY, 5, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(this.rx + this.w / 2, this.topY, 5, 0, Math.PI * 2); ctx.fill();
+      const rideCx = this.rideX + this.w / 2;
+      const weCx = this.weX + this.weW / 2;
+      const weY = this.topY + 24 + this.offset;       // ride yükselince sandık iner
+
+      // üst kiriş + çarklar
+      Engine.hazardBeam(ctx, Math.min(rideCx, weCx) - 14, this.topY - 16, Math.abs(rideCx - weCx) + 28, 8);
+      this._wheel(ctx, rideCx);
+      this._wheel(ctx, weCx);
+
       // ipler
       ctx.strokeStyle = '#caa46a'; ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(this.lx + this.w / 2, this.topY); ctx.lineTo(this.left.x + this.w / 2, this.left.y);
-      ctx.moveTo(this.rx + this.w / 2, this.topY); ctx.lineTo(this.right.x + this.w / 2, this.right.y);
-      ctx.moveTo(this.lx + this.w / 2, this.topY); ctx.lineTo(this.rx + this.w / 2, this.topY);
+      ctx.moveTo(rideCx, this.topY); ctx.lineTo(this.ride.x + this.w / 2, this.ride.y);
+      ctx.moveTo(weCx, this.topY); ctx.lineTo(weCx, weY);
+      ctx.moveTo(rideCx, this.topY); ctx.lineTo(weCx, this.topY);
       ctx.stroke();
-      // platformlar (ahşap)
-      for (const s of [this.left, this.right]) {
-        ctx.fillStyle = '#8a5a2b';
-        Engine.roundRect(ctx, s.x, s.y, s.w, s.h, 3); ctx.fill();
-        ctx.fillStyle = '#a06a33';
-        ctx.fillRect(s.x, s.y, s.w, 4);
-      }
+
+      // binilen platform (ahşap, "BAS" işaretli)
+      const s = this.ride;
+      ctx.fillStyle = '#8a5a2b';
+      Engine.roundRect(ctx, s.x, s.y, s.w, s.h, 3); ctx.fill();
+      ctx.fillStyle = '#a06a33'; ctx.fillRect(s.x, s.y, s.w, 4);
+      // yukarı ok işareti
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      const ax = s.x + s.w / 2;
+      ctx.beginPath();
+      ctx.moveTo(ax, s.y - 12); ctx.lineTo(ax - 6, s.y - 4); ctx.lineTo(ax - 2, s.y - 4);
+      ctx.lineTo(ax - 2, s.y + 1); ctx.lineTo(ax + 2, s.y + 1); ctx.lineTo(ax + 2, s.y - 4);
+      ctx.lineTo(ax + 6, s.y - 4); ctx.closePath(); ctx.fill();
+
+      // karşı ağırlık sandığı
+      ctx.fillStyle = '#7a4a24';
+      Engine.roundRect(ctx, weCx - this.weW / 2, weY, this.weW, this.weH, 3); ctx.fill();
+      ctx.strokeStyle = '#5a3416'; ctx.lineWidth = 2;
+      ctx.strokeRect(weCx - this.weW / 2 + 1, weY + 1, this.weW - 2, this.weH - 2);
+      ctx.beginPath();                                 // çapraz takviye
+      ctx.moveTo(weCx - this.weW / 2, weY); ctx.lineTo(weCx + this.weW / 2, weY + this.weH);
+      ctx.moveTo(weCx + this.weW / 2, weY); ctx.lineTo(weCx - this.weW / 2, weY + this.weH);
+      ctx.stroke();
     }
   }
 

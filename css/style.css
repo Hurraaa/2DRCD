@@ -14,6 +14,7 @@ html, body {
   position: relative;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;              /* mobil tarayıcı çubuklarına dayanıklı tam yükseklik */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -134,28 +135,35 @@ button:active { transform: translateY(4px); box-shadow: 0 1px 0 #b07a18; }
 .pad-right { right: calc(18px + env(safe-area-inset-right)); }
 .tbtn {
   pointer-events: auto;
-  width: 74px; height: 74px;
+  width: 80px; height: 80px;
   border-radius: 50%;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   color: #fff;
-  background: rgba(20,30,40,.45);
-  border: 2px solid rgba(255,255,255,.4);
-  box-shadow: none;
+  background: rgba(20,30,40,.42);
+  border: 2px solid rgba(255,255,255,.45);
+  box-shadow: 0 3px 10px rgba(0,0,0,.3);
   margin: 0;
+  transition: background .05s, transform .05s;
+  touch-action: none;
 }
 .tbtn.jump {
-  width: 92px; height: 92px;
-  font-size: 16px;
-  background: rgba(243,181,61,.55);
+  width: 100px; height: 100px;
+  font-size: 17px;
+  background: rgba(243,181,61,.5);
 }
-.tbtn:active { background: rgba(70,194,200,.6); transform: none; }
+/* Pointer/bölge sistemi 'pressed' sınıfını ekler */
+.tbtn.pressed, .tbtn:active {
+  background: rgba(70,194,200,.7);
+  transform: scale(.94);
+}
+.tbtn.jump.pressed { background: rgba(243,181,61,.85); }
 
 @media (pointer: coarse) {
   #touch-controls { display: block; }
-  /* Oyun alanını yukarı kaydır, altta butonlara yer aç */
-  #game-wrap { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
-  #hint { bottom: calc(84px + env(safe-area-inset-bottom)); }
+  /* Oyun tam ekrana sığsın: butonlar köşelerde, oyun alanını küçültmez.
+     object-fit: contain tüm oyun görünümünü en büyük halde gösterir. */
+  #hint { bottom: calc(96px + env(safe-area-inset-bottom)); }
 }
 
 /* Dikey mod uyarısı */

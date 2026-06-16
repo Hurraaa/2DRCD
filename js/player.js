@@ -128,6 +128,13 @@ class Player {
   _resolve(world, prevBottom, climbMode) {
     const solids = world.solidsThisFrame;
 
+    // Hareketli platformla ÖNCE taşı (çarpışmadan önce) — asansör/makara mantığı.
+    // Böylece yukarı kalkan platform oyuncunun içine girip onu yana fırlatmaz.
+    if (!climbMode && this.grounded && this.standingOn && this.standingOn.carry) {
+      this.x += this.standingOn.carry.dx;
+      this.y += this.standingOn.carry.dy;
+    }
+
     // X ekseni
     this.x += this.vx;
     Engine.resolveX(this, solids);
@@ -151,11 +158,7 @@ class Player {
       if (r.grounded) this.coyote = 7;
       else if (this.coyote > 0) this.coyote--;
 
-      // Hareketli platform yatay taşıması.
-      // (Dikey takip resolveY snap'i ile zaten olur; carry.dy eklersek çift hareket olur.)
-      if (r.grounded && r.platform && r.platform.carry) {
-        this.x += r.platform.carry.dx;
-      }
+      // (Hareketli platform taşıması artık çözümden ÖNCE yapılıyor — yukarıya bakın.)
       // Konveyör itişi
       if (r.grounded && r.platform && r.platform.conveyor) {
         this.x += r.platform.conveyor;
@@ -193,13 +196,12 @@ class Player {
     const cx = x + this.w / 2;
     const f = this.facing;
 
-    // Palet
+    // Palet — atletli, tombul, "burada ne işim var" tipli amca
     const SKIN = '#e8b88c', SKIN_D = '#cf9a6e';
-    const JACKET = '#ef7d3a', JACKET_D = '#cf5f23';   // turuncu ceket
-    const PANTS = '#2f7d4f', PANTS_D = '#225e3b';     // yeşil pantolon
-    const BOOTS = '#5a3a22';
-    const HAIR = '#3a2a1c';                            // koyu kahve saç
-    const PACK = '#7a4a8c';                            // mor sırt çantası
+    const TANK = '#f3efe6', TANK_D = '#d6d0c2';       // kirli-beyaz atlet
+    const SHORTS = '#3f5d8f', SHORTS_D = '#324c75';   // mavi şort
+    const SHOES = '#5a3a22';                           // kahve ayakkabı
+    const HAIR = '#4a3322';                            // yanlarda saç (tepe kel)
 
     // Gölge — dünya uzayında, son zemin seviyesine sabit (zıplayınca yukarı çıkmaz).
     // Havalandıkça hafifçe küçülüp soluyor.
@@ -225,91 +227,116 @@ class Player {
 
     ctx.translate(0, -bob);
 
-    // Sırt çantası (geride — gövdenin arkasında, -x tarafı)
-    ctx.fillStyle = PACK;
-    Engine.roundRect(ctx, -13, h - 35, 9, 16, 3); ctx.fill();
-    ctx.fillStyle = '#693d78';
-    ctx.fillRect(-12, h - 30, 7, 4);
-
-    // Botlar + bacaklar (yeşil pantolon)
     ctx.lineCap = 'round';
-    ctx.strokeStyle = PANTS; ctx.lineWidth = 6;
+
+    // Bacaklar (kısa, tombul) + ayakkabı
+    ctx.strokeStyle = SKIN; ctx.lineWidth = 7;
     ctx.beginPath();
-    ctx.moveTo(-4, h - 18); ctx.lineTo(-4 - legA * 0.4, h - 3);
-    ctx.moveTo(4, h - 18);  ctx.lineTo(4 + legA * 0.4, h - 3);
+    ctx.moveTo(-5, h - 14); ctx.lineTo(-5 - legA * 0.35, h - 3);
+    ctx.moveTo(5, h - 14);  ctx.lineTo(5 + legA * 0.35, h - 3);
     ctx.stroke();
-    ctx.fillStyle = BOOTS;  // botlar
-    Engine.roundRect(ctx, -8 - legA * 0.4, h - 5, 9, 5, 2); ctx.fill();
-    Engine.roundRect(ctx, -1 + legA * 0.4, h - 5, 9, 5, 2); ctx.fill();
+    ctx.fillStyle = SHOES;
+    Engine.roundRect(ctx, -11 - legA * 0.35, h - 5, 12, 5, 2.5); ctx.fill();
+    Engine.roundRect(ctx, -1 + legA * 0.35, h - 5, 12, 5, 2.5); ctx.fill();
 
-    // Kemer
-    ctx.fillStyle = '#33240f';
-    ctx.fillRect(-9, h - 24, 18, 3);
+    // Şort (geniş)
+    ctx.fillStyle = SHORTS;
+    Engine.roundRect(ctx, -11, h - 24, 22, 12, 5); ctx.fill();
+    ctx.fillStyle = SHORTS_D;
+    ctx.fillRect(-1, h - 23, 2, 9);                  // şort orta dikiş
 
-    // Gövde (turuncu ceket)
-    ctx.fillStyle = JACKET;
-    Engine.roundRect(ctx, -9, h - 38, 18, 16, 5); ctx.fill();
-    ctx.fillStyle = JACKET_D;                       // ceket fermuarı/gölge
-    ctx.fillRect(-1, h - 37, 2, 14);
-    ctx.fillStyle = '#ffd35a';                       // göğüs amblemi
-    ctx.beginPath(); ctx.arc(-4.5, h - 31, 2, 0, Math.PI * 2); ctx.fill();
+    // Üst gövde (ten — kolsuz atlet, tombul omuzlar)
+    ctx.fillStyle = SKIN;
+    Engine.roundRect(ctx, -12, h - 40, 24, 17, 9); ctx.fill();
 
-    // Kollar (ceket kollu + ten el)
-    ctx.strokeStyle = JACKET; ctx.lineWidth = 5;
+    // Atlet (kirli beyaz) — göbeği saran ön
+    ctx.fillStyle = TANK;
+    ctx.beginPath(); ctx.ellipse(0, h - 28, 12.5, 10.5, 0, 0, Math.PI * 2); ctx.fill();
+    // omuz askıları
+    Engine.roundRect(ctx, -8.5, h - 40, 4.5, 14, 2); ctx.fill();
+    Engine.roundRect(ctx, 4, h - 40, 4.5, 14, 2); ctx.fill();
+    // göbek deliği
+    ctx.strokeStyle = TANK_D; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(0, h - 24, 1.3, 0, Math.PI * 2); ctx.stroke();
+
+    // Tombul kollar (çıplak, ten)
+    ctx.strokeStyle = SKIN; ctx.lineWidth = 6;
     ctx.beginPath();
     if (this.hanging) {
-      ctx.moveTo(-5, h - 36); ctx.lineTo(-5, h - 46);
-      ctx.moveTo(6, h - 36);  ctx.lineTo(6, h - 46);
+      ctx.moveTo(-7, h - 37); ctx.lineTo(-6, h - 47);
+      ctx.moveTo(7, h - 37);  ctx.lineTo(6, h - 47);
     } else if (this.climbing) {
-      ctx.moveTo(-5, h - 36); ctx.lineTo(-9, h - 44);
-      ctx.moveTo(6, h - 36);  ctx.lineTo(10, h - 42 + armA);
+      ctx.moveTo(-7, h - 37); ctx.lineTo(-11, h - 45);
+      ctx.moveTo(7, h - 37);  ctx.lineTo(11, h - 43 + armA);
     } else {
-      ctx.moveTo(-5, h - 36); ctx.lineTo(-6 + armA * 0.3, h - 25);
-      ctx.moveTo(6, h - 36);  ctx.lineTo(7 - armA * 0.3, h - 25);
+      ctx.moveTo(-8, h - 37); ctx.lineTo(-9 + armA * 0.3, h - 26);
+      ctx.moveTo(8, h - 37);  ctx.lineTo(9 - armA * 0.3, h - 26);
     }
     ctx.stroke();
-    ctx.fillStyle = SKIN;                            // eller
-    const handY = this.hanging ? h - 46 : (this.climbing ? h - 44 : h - 25);
-    ctx.beginPath(); ctx.arc(this.hanging ? -5 : (this.climbing ? -9 : -6 + armA * 0.3), handY, 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = SKIN_D;                          // eller
+    const hx = this.hanging ? -6 : (this.climbing ? -11 : -9 + armA * 0.3);
+    const hYp = this.hanging ? h - 47 : (this.climbing ? h - 45 : h - 26);
+    ctx.beginPath(); ctx.arc(hx, hYp, 2.4, 0, Math.PI * 2); ctx.fill();
 
-    // Boyun
-    ctx.strokeStyle = SKIN; ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.moveTo(0, h - 38); ctx.lineTo(0, h - 42); ctx.stroke();
+    // Boyun (kısa, kalın — gıdık)
+    ctx.strokeStyle = SKIN; ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.moveTo(0, h - 41); ctx.lineTo(0, h - 44); ctx.stroke();
 
-    // Kafa
-    const hy = h - 50;
+    // Kafa (yuvarlak, biraz iri)
+    const hy = h - 51;
     ctx.fillStyle = SKIN;
-    ctx.beginPath(); ctx.arc(0, hy, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, hy, 10, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = SKIN_D; ctx.lineWidth = 1; ctx.stroke();
-    // Kulak
+    // çift gıdık
     ctx.fillStyle = SKIN;
-    ctx.beginPath(); ctx.arc(8, hy + 1, 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, hy + 8, 6, 3.2, 0, 0, Math.PI); ctx.fill();
+    // kulak
+    ctx.beginPath(); ctx.arc(9, hy + 1, 2.6, 0, Math.PI * 2); ctx.fill();
 
-    // Saç (kâkül + tepe tutamı)
-    ctx.fillStyle = HAIR;
-    ctx.beginPath();
-    ctx.arc(0, hy - 1, 9.4, Math.PI * 1.02, Math.PI * 2.05);
-    ctx.lineTo(8, hy - 3);
-    ctx.quadraticCurveTo(2, hy - 12, -6, hy - 7);
-    ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(2, hy - 9);          // tepe tutamı
-    ctx.quadraticCurveTo(7, hy - 15, 4, hy - 7); ctx.fill();
+    // Yan saç (tepe kel, yanlarda + arkada saç bandı)
+    ctx.strokeStyle = HAIR; ctx.lineWidth = 3.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, hy + 0.5, 9.6, Math.PI * 0.62, Math.PI * 1.7); ctx.stroke();
+    ctx.fillStyle = HAIR;                            // kulak üstü tutam
+    ctx.beginPath(); ctx.arc(-7.5, hy - 3, 2.4, 0, Math.PI * 2); ctx.fill();
 
-    // Alındaki gözlük (kâşif goggle)
-    ctx.strokeStyle = '#6b4a2a'; ctx.lineWidth = 2.4;
-    ctx.beginPath(); ctx.moveTo(-7, hy - 4); ctx.lineTo(8, hy - 4.5); ctx.stroke();
-    ctx.fillStyle = '#9fd6e8';
-    ctx.beginPath(); ctx.arc(3.5, hy - 4, 2.6, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#4a3018'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(3.5, hy - 4, 2.6, 0, Math.PI * 2); ctx.stroke();
+    // Endişeli kaşlar (kalkık)
+    ctx.strokeStyle = '#5a4030'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(1.5, hy - 3.5); ctx.lineTo(5.5, hy - 4.6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-3, hy - 3.2); ctx.lineTo(-0.5, hy - 4.2); ctx.stroke();
 
-    // Yüz
+    // Gözler (küçük, şaşkın)
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(4.3, hy, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.2, hy + 0.2, 1.8, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#222';
-    ctx.beginPath(); ctx.arc(4, hy, 1.5, 0, Math.PI * 2); ctx.fill();       // göz
-    ctx.fillStyle = '#d98f6a';                                              // yanak
-    ctx.beginPath(); ctx.arc(6.5, hy + 3, 1.6, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#8a5a32'; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(4.5, hy + 3, 2.3, 0.15, 1.15); ctx.stroke();   // gülümseme
+    ctx.beginPath(); ctx.arc(4.8, hy + 0.3, 1.1, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.6, hy + 0.5, 1.0, 0, Math.PI * 2); ctx.fill();
+
+    // Patates burun
+    ctx.fillStyle = SKIN_D;
+    ctx.beginPath(); ctx.arc(6.5, hy + 3.5, 2.2, 0, Math.PI * 2); ctx.fill();
+
+    // Bıyık
+    ctx.strokeStyle = HAIR; ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(1.5, hy + 5.5);
+    ctx.quadraticCurveTo(4.5, hy + 7, 7, hy + 5);
+    ctx.stroke();
+
+    // Ağız (endişeli — aşağı kıvrık)
+    ctx.strokeStyle = '#7a4a35'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(2.5, hy + 8.6);
+    ctx.quadraticCurveTo(4.5, hy + 7.7, 6.5, hy + 8.7);
+    ctx.stroke();
+
+    // Ter damlası ("burada ne işim var" havası)
+    ctx.fillStyle = 'rgba(120,200,235,0.92)';
+    ctx.beginPath();
+    ctx.moveTo(9, hy - 7);
+    ctx.quadraticCurveTo(7, hy - 4.5, 9, hy - 3.5);
+    ctx.quadraticCurveTo(10.6, hy - 4.8, 9, hy - 7);
+    ctx.fill();
 
     ctx.restore();
   }

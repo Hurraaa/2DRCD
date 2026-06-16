@@ -76,10 +76,10 @@ for (let li = 0; li < LEVELS.length; li++) {
 
   for (let frame = 0; frame < 4000; frame++) {
     // Basit bot: hep sağa yürü, takılınca/zaman zaman zıpla, ara sıra yukarı
-    Input.state.right = true;
-    Input.state.left = false;
-    Input.state.up = (frame % 90 < 25);
-    Input.state.jump = (frame % 50 < 8);
+    Input._sim.set('right', true);
+    Input._sim.set('left', false);
+    Input._sim.set('up', frame % 90 < 25);
+    Input._sim.set('jump', frame % 50 < 8);
     Input.preUpdate();
 
     world.update();
@@ -105,21 +105,22 @@ for (let li = 0; li < LEVELS.length; li++) {
   const p = world.player;
   let won = false;
   for (let f = 0; f < 2000; f++) {
-    const s = Input.state;
-    s.left = false; s.right = true; s.up = false; s.jump = false;
+    let left = false, right = true, up = false, jump = false;
     // çukuru aş: tüm yay boyunca zıplamayı basılı tut
-    if (p.x > 600 && p.x < 800 && p.y < 520) { s.jump = true; }
+    if (p.x > 600 && p.x < 800 && p.y < 520) jump = true;
     // çiviyi aş
-    if (p.x > 945 && p.x < 1080 && p.y < 520) { s.jump = true; }
+    if (p.x > 945 && p.x < 1080 && p.y < 520) jump = true;
     const nearLadder = p.x > 1185 && p.x < 1245;
     if (p.climbing) {
       // platform seviyesine (feet ~340 => y~294) kadar tırman
-      if (p.y > 292) { s.up = true; s.right = false; } else { s.up = false; s.right = false; }
+      if (p.y > 292) { up = true; right = false; } else { up = false; right = false; }
     } else if (nearLadder && p.y > 360) {
-      s.up = true; s.right = false;            // merdivene tırmanmaya başla
+      up = true; right = false;                // merdivene tırmanmaya başla
     } else if (p.y < 360 && p.x > 1180) {
-      s.right = true;                          // tepede bayrağa yürü
+      right = true;                            // tepede bayrağa yürü
     }
+    Input._sim.set('left', left); Input._sim.set('right', right);
+    Input._sim.set('up', up); Input._sim.set('jump', jump);
     Input.preUpdate();
     world.update();
     Input.postUpdate();
@@ -128,6 +129,26 @@ for (let li = 0; li < LEVELS.length; li++) {
   }
   check(won, 'Bölüm 1 senaryoyla bitirilemedi (yürü/zıpla/tırman/bayrak zinciri)');
   console.log(`  Bölüm 1 senaryo testi: bitirildi=${won}`);
+})();
+
+// --- Hedefe yönelik test: Bölüm 2 makaralı asansör oyuncuyu taşıyıp çıkışa ulaştırır ---
+(function ridePulley() {
+  const world = new World(LEVELS[1]);
+  const p = world.player;
+  p.x = 1100; p.y = 430; p.vx = 0; p.vy = 0;   // asansör platformuna yerleştir
+  let rose = false, won = false;
+  for (let f = 0; f < 1600; f++) {
+    if (p.y < 270) rose = true;
+    const right = rose;                          // tepeye çıkınca bayrağa yürü
+    Input._sim.set('left', false); Input._sim.set('right', right);
+    Input._sim.set('up', false); Input._sim.set('jump', false);
+    Input.preUpdate(); world.update(); Input.postUpdate();
+    if (p.won) { won = true; break; }
+    if (p.dead) { p.reset(); p.x = 1100; p.y = 430; rose = false; }
+  }
+  check(rose, 'Bölüm 2: makara asansörü oyuncuyu yukarı taşımadı');
+  check(won, 'Bölüm 2: makarayla çıktıktan sonra bayrağa ulaşılamadı');
+  console.log(`  Bölüm 2 makara testi: yükseldi=${rose} • bayrak=${won}`);
 })();
 
 if (failures === 0) console.log('\n✓ Tüm bölümler çökmeden çalıştı, NaN yok.');

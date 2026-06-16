@@ -31,7 +31,7 @@ const LEVELS = [
   /* ---------- BÖLÜM 2: Sallanan Tehlike (sarkaç + makara asansör) ---------- */
   {
     name: 'Sallanan Tehlike',
-    hint: 'Sallanan dikenli toplardan zamanla geç • Sol platforma bin — seni yukarı taşır',
+    hint: 'Sallanan toplardan zamanla geç • Ok işaretli asansör platformuna BAS ve bekle — karşı ağırlık seni yukarı çıkarır',
     width: 2100, height: 640,
     spawn: { x: 50, y: 440 },
     solids: [
@@ -45,7 +45,7 @@ const LEVELS = [
       { type: 'pendulum', x: 320, y: 150, length: 320, ballR: 22, amp: 1.15, speed: 0.032, phase: 0 },
       { type: 'pendulum', x: 640, y: 150, length: 320, ballR: 22, amp: 1.15, speed: 0.032, phase: 1.6 },
       { type: 'pendulum', x: 940, y: 150, length: 320, ballR: 22, amp: 1.0,  speed: 0.030, phase: 0.8 },
-      { type: 'pulley', leftX: 1080, rightX: 1260, topY: 120, baseY: 480, range: 180, platW: 80 },
+      { type: 'pulley', leftX: 1080, weightX: 950, topY: 130, baseY: 480, range: 180, platW: 84 },
     ],
     goal: { x: 1870, y: 240, w: 30, h: 60 },
   },
