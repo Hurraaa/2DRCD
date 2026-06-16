@@ -171,10 +171,9 @@ const LEVELS = [
     solids: [
       { x: -40, y: 500, w: 400, h: 140 },          // S0 başlangıç (..360)
       { x: 1400, y: 500, w: 220, h: 140 },         // S1 nefeslik (1400..1620)
-      // Bölüm B: gerçek (zor) merdiven — sahte köprünün ALTERNATİFİ
-      { x: 1680, y: 452, w: 80, h: 16 },           // T1
-      { x: 1800, y: 424, w: 80, h: 16 },           // T2
-      { x: 1920, y: 452, w: 80, h: 16 },           // T3
+      // Bölüm B: "gerçek" merdiven — ama ORTASI da tuzak (T1, T3 gerçek)
+      { x: 1680, y: 452, w: 80, h: 16 },           // T1 (gerçek)
+      { x: 1920, y: 452, w: 80, h: 16 },           // T3 (gerçek)
       { x: 2040, y: 500, w: 500, h: 140 },         // S3 çıkış zemini (2040..2540)
     ],
     slopes: [],
@@ -192,6 +191,8 @@ const LEVELS = [
       { type: 'fakeTile', x: 1175, y: 500, w: 85, h: 16, delay: 24 },
       // Bölüm B (ALDATMA): S1'in kesintisiz devamı gibi duran GENİŞ köprü sahte.
       { type: 'fakeTile', x: 1620, y: 500, w: 360, h: 16, delay: 22 },
+      // SÜRPRİZ: "güvenli" merdivenin ORTA basamağı da çöker! (T1/T3 gerçek, tepki veren kurtulur)
+      { type: 'fakeTile', x: 1800, y: 424, w: 80, h: 16, delay: 18 },
     ],
     goal: { x: 2400, y: 440, w: 30, h: 60 },
   },
