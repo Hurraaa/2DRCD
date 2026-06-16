@@ -219,5 +219,28 @@ for (let li = 0; li < LEVELS.length; li++) {
   console.log(`  Tuzak laboratuvarı: çökme yok • tuzaklar tetiklendi (ölüm gözlendi=${anyDeath})`);
 })();
 
+// --- Kaya fiziği: zemine temas ederek yuvarlanır + ölümde ilk yerine döner ---
+(function boulderPhysics() {
+  const world = new World(LEVELS[3]);            // Bölüm 4
+  const b = world.machines[0];                   // boulder
+  const startY = b.startY;
+  let contactOk = true, rolledDown = false;
+  for (let f = 0; f < 220; f++) {
+    world.player.x = 600;                         // tetik bölgesini geç (triggerX=460)
+    world.player.dead = false;
+    world.update();
+    if (b.rolling) {
+      const gy = world.terrainTopAt(b.x);
+      if (gy !== null && Math.abs(b.y - (gy - b.r)) > 10) contactOk = false;  // zemine yapışık mı
+      if (b.y > startY + 50) rolledDown = true;
+    }
+  }
+  check(contactOk, 'Bölüm 4: kaya zemine temas etmiyor (fizik bozuk)');
+  check(rolledDown, 'Bölüm 4: kaya yokuştan aşağı inmedi');
+  world.resetDynamic();                           // ölüm simülasyonu
+  check(Math.abs(b.x - b.startX) < 1 && !b.rolling, 'Kaya ölümde ilk yerine dönmüyor');
+  console.log(`  Kaya fizik testi: zemine temas=${contactOk} • yokuş indi=${rolledDown} • reset=${Math.abs(b.x - b.startX) < 1}`);
+})();
+
 if (failures === 0) console.log('\n✓ Tüm bölümler çökmeden çalıştı, NaN yok.');
 else { console.log(`\n✗ ${failures} sorun bulundu.`); process.exit(1); }

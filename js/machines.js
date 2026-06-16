@@ -268,27 +268,51 @@ const Machines = (() => {
     }
   }
 
-  /* --- Yuvarlanan kaya (eğik düzlem + tekerlek), tetikle çalışır --- */
+  /* --- Yuvarlanan kaya: GERÇEK FİZİK — zemine temas eder, eğimde hızlanır,
+         düzde momentum/sürtünme ile yuvarlanır. Tetikle çalışır, her ölümde sıfırlanır. --- */
   class Boulder {
     constructor(d) {
       this.startX = d.x; this.startY = d.y;
       this.r = d.r || 26;
       this.triggerX = d.triggerX;
       this.endX = d.endX;
-      this.slopeY1 = d.y; this.slopeY2 = d.endY || d.y;
-      this.speed = d.speed || 3.2;
+      this.maxSpeed = d.speed || 4.2;
+      this.drive = (d.drive != null) ? d.drive : 0.14;   // yuvarlanma sürükleme (düzde de döner)
+      this.reset();
+    }
+    reset() {
       this.x = this.startX; this.y = this.startY;
-      this.rolling = false; this.spin = 0;
+      this.vx = 0; this.vy = 0; this.spin = 0; this.rolling = false;
     }
     update(world) {
       if (!this.rolling && world.player.x > this.triggerX) this.rolling = true;
-      if (this.rolling) {
-        this.x += this.speed;
-        const t = Engine.clamp((this.x - this.startX) / (this.endX - this.startX), 0, 1);
-        this.y = Engine.lerp(this.slopeY1, this.slopeY2, t);
-        this.spin += this.speed / this.r;
-        if (this.x > this.endX + 60) { this.x = this.startX; this.y = this.startY; this.rolling = false; }
+      if (!this.rolling) return;
+
+      // Yerçekimi + hareket
+      this.vy += 0.6;
+      this.x += this.vx;
+      this.y += this.vy;
+
+      // Altındaki araziye otur (zemine temas)
+      const gy = world.terrainTopAt(this.x);
+      if (gy !== null && this.y + this.r >= gy) {
+        this.y = gy - this.r;
+        if (this.vy > 0) this.vy = 0;
+        // Eğime göre yatay ivme (yokuş aşağı hızlanır) + yuvarlanma sürüklemesi
+        const gA = world.terrainTopAt(this.x - 6);
+        const gB = world.terrainTopAt(this.x + 6);
+        if (gA !== null && gB !== null) {
+          const slope = (gB - gA) / 12;            // + : sağa doğru iniş
+          this.vx += slope * 0.85;                 // yokuş bileşeni
+        }
+        this.vx += this.drive;                     // kovalayan momentum
+        this.vx *= 0.99;                           // yuvarlanma sürtünmesi
       }
+      this.vx = Engine.clamp(this.vx, -this.maxSpeed, this.maxSpeed);
+      this.spin += this.vx / this.r;
+
+      // Yol bitince başa dön (sürekli tehdit)
+      if (this.x > this.endX + 80) this.reset();
     }
     deadlyCircles() { return this.rolling ? [{ x: this.x, y: this.y, r: this.r - 4 }] : []; }
     draw(ctx) {

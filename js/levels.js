@@ -161,4 +161,39 @@ const LEVELS = [
     ],
     goal: { x: 2080, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 7: Çöken Zemin (fakeTile öğretir) ---------- */
+  {
+    name: 'Çöken Zemin',
+    hint: 'ÇÖKEN ZEMİN! Bazı zeminler basınca çöker — üstünde OYALANMA, akıcı yürü • Sonda EN KOLAY görünen yol seni kandırabilir!',
+    width: 2000, height: 640,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 360, h: 140 },          // S0 başlangıç (..320)
+      { x: 480, y: 500, w: 300, h: 140 },          // S1 nefeslik (480..780)
+      { x: 880, y: 500, w: 300, h: 140 },          // S2 nefeslik (880..1180)
+      { x: 1540, y: 500, w: 320, h: 140 },         // S3 çıkış zemini (1540..1860)
+      // Ders 3: gerçek (zor) merdiven — sahte geniş platformun ALTERNATİFİ
+      { x: 1220, y: 440, w: 80, h: 16 },           // T1
+      { x: 1340, y: 416, w: 80, h: 16 },           // T2
+      { x: 1460, y: 440, w: 80, h: 16 },           // T3
+    ],
+    slopes: [],
+    ladders: [], ropesV: [], ropesH: [],
+    spikes: [
+      { x: 320, y: 560, w: 160, h: 60 },           // ders 1 çöken zemin altı (320..480)
+      { x: 780, y: 560, w: 100, h: 60 },           // ders 2 çöken zemin altı (780..880)
+      { x: 1180, y: 560, w: 360, h: 60 },          // ders 3 sahte platform/çatal altı (1180..1540)
+    ],
+    machines: [
+      // Ders 1: çatlaklı (uyarılı) çöken zemin — bol süre; sadece oyalanan düşer
+      { type: 'fakeTile', x: 320, y: 500, w: 160, h: 16, delay: 48, hint: true },
+      // Ders 2: yolun ortasında uyarısız çöken parça — akıcı yürüyen geçer, duraksayan düşer
+      { type: 'fakeTile', x: 780, y: 500, w: 100, h: 16, delay: 34 },
+      // Ders 3 (ALDATMA): zeminin kesintisiz devamı gibi görünen geniş platform SAHTE.
+      // Gerçek yol yukarıdaki merdiven (T1-T2-T3).
+      { type: 'fakeTile', x: 1180, y: 500, w: 300, h: 16, delay: 30 },
+    ],
+    goal: { x: 1740, y: 440, w: 30, h: 60 },
+  },
 ];

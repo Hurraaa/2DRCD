@@ -46,6 +46,20 @@ class World {
     return null;
   }
 
+  // --- Verilen x'te arazi (statik eğim + katı zemin) ÜST yüzeyi ---
+  // Yuvarlanan cisimlerin (kaya) zemine temas ederek hareketi için.
+  terrainTopAt(x) {
+    let top = null;
+    for (const s of this.slopes) {
+      const gy = Engine.slopeGroundY(s, x);
+      if (gy !== null && (top === null || gy < top)) top = gy;
+    }
+    for (const s of this.solids) {
+      if (x >= s.x && x <= s.x + s.w && (top === null || s.y < top)) top = s.y;
+    }
+    return top;
+  }
+
   // --- Eğik düzlem zemin yüksekliği ---
   slopeGroundAt(x) {
     let best = null;
