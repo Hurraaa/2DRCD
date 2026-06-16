@@ -13,7 +13,8 @@ function makeCtx() {
   const noop = () => {};
   const methods = ['save','restore','translate','scale','rotate','beginPath',
     'moveTo','lineTo','arc','arcTo','ellipse','closePath','fill','stroke',
-    'fillRect','strokeRect','clip','rect','fillText','setTransform'];
+    'fillRect','strokeRect','clip','rect','fillText','setTransform',
+    'quadraticCurveTo','bezierCurveTo'];
   for (const m of methods) ctx[m] = noop;
   ctx.createLinearGradient = () => grad;
   ctx.fillStyle = ''; ctx.strokeStyle = ''; ctx.lineWidth = 1;

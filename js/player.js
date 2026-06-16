@@ -26,6 +26,7 @@ class Player {
     this.jumpBuffer = 0;
     this.animTime = 0;
     this.standingOn = null;
+    this.lastGroundY = this.spawnY + this.h;   // gölge için son zemin seviyesi
   }
 
   get cx() { return this.x + this.w / 2; }
@@ -146,6 +147,7 @@ class Player {
 
       this.grounded = r.grounded;
       this.standingOn = r.platform;
+      if (r.grounded) this.lastGroundY = this.y + this.h;   // gölgeyi zemine sabitle
       if (r.grounded) this.coyote = 7;
       else if (this.coyote > 0) this.coyote--;
 
@@ -185,84 +187,129 @@ class Player {
     if (!this.won && !this.dead) this.won = true;
   }
 
-  // --- Çizim: kel çizgi-film karakter (görsellerdeki gibi) ---
+  // --- Çizim: özgün küçük kâşif (saçlı, gözlüklü, ceketli, sırt çantalı) ---
   draw(ctx) {
-    const x = this.x, y = this.y, w = this.w, h = this.h;
-    const cx = x + w / 2;
+    const x = this.x, y = this.y, h = this.h;
+    const cx = x + this.w / 2;
     const f = this.facing;
+
+    // Palet
+    const SKIN = '#e8b88c', SKIN_D = '#cf9a6e';
+    const JACKET = '#ef7d3a', JACKET_D = '#cf5f23';   // turuncu ceket
+    const PANTS = '#2f7d4f', PANTS_D = '#225e3b';     // yeşil pantolon
+    const BOOTS = '#5a3a22';
+    const HAIR = '#3a2a1c';                            // koyu kahve saç
+    const PACK = '#7a4a8c';                            // mor sırt çantası
+
+    // Gölge — dünya uzayında, son zemin seviyesine sabit (zıplayınca yukarı çıkmaz).
+    // Havalandıkça hafifçe küçülüp soluyor.
+    const groundY = (this.lastGroundY != null) ? this.lastGroundY : (y + h);
+    const air = Math.max(0, groundY - (y + h));
+    ctx.save();
+    ctx.fillStyle = `rgba(0,0,0,${Math.max(0.05, 0.2 - air * 0.0009)})`;
+    const sw = Math.max(7, 15 - air * 0.03);
+    ctx.beginPath();
+    ctx.ellipse(cx, groundY + 2, sw, sw * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
 
     ctx.save();
     ctx.translate(cx, y);
     ctx.scale(f, 1);
 
-    // Yürüme bacak salınımı
     const walk = (this.grounded && Math.abs(this.vx) > 0.4) || this.climbing || this.hanging;
     const swing = walk ? Math.sin(this.animTime) : 0;
     const legA = swing * 8;
     const armA = -swing * 7;
+    const bob = walk ? Math.abs(Math.sin(this.animTime)) * 1.2 : 0; // hafif zıpçıp
 
-    // Gölge
-    ctx.save();
-    ctx.translate(0, h);
-    ctx.fillStyle = 'rgba(0,0,0,0.18)';
-    ctx.beginPath();
-    ctx.ellipse(0, 2, 16, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+    ctx.translate(0, -bob);
 
-    // Bacaklar (mavi şort + bacak)
-    ctx.strokeStyle = '#f0c08c';
-    ctx.lineWidth = 5;
+    // Sırt çantası (geride — gövdenin arkasında, -x tarafı)
+    ctx.fillStyle = PACK;
+    Engine.roundRect(ctx, -13, h - 35, 9, 16, 3); ctx.fill();
+    ctx.fillStyle = '#693d78';
+    ctx.fillRect(-12, h - 30, 7, 4);
+
+    // Botlar + bacaklar (yeşil pantolon)
     ctx.lineCap = 'round';
+    ctx.strokeStyle = PANTS; ctx.lineWidth = 6;
     ctx.beginPath();
-    ctx.moveTo(-4, h - 16); ctx.lineTo(-4 - legA * 0.4, h);
-    ctx.moveTo(4, h - 16);  ctx.lineTo(4 + legA * 0.4, h);
+    ctx.moveTo(-4, h - 18); ctx.lineTo(-4 - legA * 0.4, h - 3);
+    ctx.moveTo(4, h - 18);  ctx.lineTo(4 + legA * 0.4, h - 3);
     ctx.stroke();
-    // Şort
-    ctx.fillStyle = '#3b5bb5';
-    Engine.roundRect(ctx, -8, h - 24, 16, 11, 3);
-    ctx.fill();
+    ctx.fillStyle = BOOTS;  // botlar
+    Engine.roundRect(ctx, -8 - legA * 0.4, h - 5, 9, 5, 2); ctx.fill();
+    Engine.roundRect(ctx, -1 + legA * 0.4, h - 5, 9, 5, 2); ctx.fill();
 
-    // Gövde (beyaz tişört)
-    ctx.fillStyle = '#f5f5f5';
-    Engine.roundRect(ctx, -9, h - 36, 18, 16, 5);
-    ctx.fill();
-    ctx.strokeStyle = '#d9d9d9'; ctx.lineWidth = 1; ctx.stroke();
+    // Kemer
+    ctx.fillStyle = '#33240f';
+    ctx.fillRect(-9, h - 24, 18, 3);
 
-    // Kollar
-    ctx.strokeStyle = '#f0c08c';
-    ctx.lineWidth = 4.5;
+    // Gövde (turuncu ceket)
+    ctx.fillStyle = JACKET;
+    Engine.roundRect(ctx, -9, h - 38, 18, 16, 5); ctx.fill();
+    ctx.fillStyle = JACKET_D;                       // ceket fermuarı/gölge
+    ctx.fillRect(-1, h - 37, 2, 14);
+    ctx.fillStyle = '#ffd35a';                       // göğüs amblemi
+    ctx.beginPath(); ctx.arc(-4.5, h - 31, 2, 0, Math.PI * 2); ctx.fill();
+
+    // Kollar (ceket kollu + ten el)
+    ctx.strokeStyle = JACKET; ctx.lineWidth = 5;
     ctx.beginPath();
     if (this.hanging) {
-      ctx.moveTo(-6, h - 34); ctx.lineTo(-6, h - 44);
-      ctx.moveTo(6, h - 34);  ctx.lineTo(6, h - 44);
+      ctx.moveTo(-5, h - 36); ctx.lineTo(-5, h - 46);
+      ctx.moveTo(6, h - 36);  ctx.lineTo(6, h - 46);
     } else if (this.climbing) {
-      ctx.moveTo(-6, h - 34); ctx.lineTo(-9, h - 42);
-      ctx.moveTo(6, h - 34);  ctx.lineTo(9, h - 40 + armA);
+      ctx.moveTo(-5, h - 36); ctx.lineTo(-9, h - 44);
+      ctx.moveTo(6, h - 36);  ctx.lineTo(10, h - 42 + armA);
     } else {
-      ctx.moveTo(-6, h - 34); ctx.lineTo(-7 + armA * 0.3, h - 22);
-      ctx.moveTo(6, h - 34);  ctx.lineTo(7 - armA * 0.3, h - 22);
+      ctx.moveTo(-5, h - 36); ctx.lineTo(-6 + armA * 0.3, h - 25);
+      ctx.moveTo(6, h - 36);  ctx.lineTo(7 - armA * 0.3, h - 25);
     }
     ctx.stroke();
+    ctx.fillStyle = SKIN;                            // eller
+    const handY = this.hanging ? h - 46 : (this.climbing ? h - 44 : h - 25);
+    ctx.beginPath(); ctx.arc(this.hanging ? -5 : (this.climbing ? -9 : -6 + armA * 0.3), handY, 2.2, 0, Math.PI * 2); ctx.fill();
 
     // Boyun
-    ctx.strokeStyle = '#f0c08c'; ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.moveTo(0, h - 36); ctx.lineTo(0, h - 41); ctx.stroke();
+    ctx.strokeStyle = SKIN; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(0, h - 38); ctx.lineTo(0, h - 42); ctx.stroke();
 
-    // Kafa (kel)
-    ctx.fillStyle = '#f3c89b';
-    ctx.beginPath();
-    ctx.arc(0, h - 49, 9, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = '#e0ad7c'; ctx.lineWidth = 1; ctx.stroke();
+    // Kafa
+    const hy = h - 50;
+    ctx.fillStyle = SKIN;
+    ctx.beginPath(); ctx.arc(0, hy, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = SKIN_D; ctx.lineWidth = 1; ctx.stroke();
     // Kulak
-    ctx.fillStyle = '#f3c89b';
-    ctx.beginPath(); ctx.arc(8, h - 49, 2.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = SKIN;
+    ctx.beginPath(); ctx.arc(8, hy + 1, 2.2, 0, Math.PI * 2); ctx.fill();
+
+    // Saç (kâkül + tepe tutamı)
+    ctx.fillStyle = HAIR;
+    ctx.beginPath();
+    ctx.arc(0, hy - 1, 9.4, Math.PI * 1.02, Math.PI * 2.05);
+    ctx.lineTo(8, hy - 3);
+    ctx.quadraticCurveTo(2, hy - 12, -6, hy - 7);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(2, hy - 9);          // tepe tutamı
+    ctx.quadraticCurveTo(7, hy - 15, 4, hy - 7); ctx.fill();
+
+    // Alındaki gözlük (kâşif goggle)
+    ctx.strokeStyle = '#6b4a2a'; ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.moveTo(-7, hy - 4); ctx.lineTo(8, hy - 4.5); ctx.stroke();
+    ctx.fillStyle = '#9fd6e8';
+    ctx.beginPath(); ctx.arc(3.5, hy - 4, 2.6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#4a3018'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(3.5, hy - 4, 2.6, 0, Math.PI * 2); ctx.stroke();
+
     // Yüz
     ctx.fillStyle = '#222';
-    ctx.beginPath(); ctx.arc(4, h - 51, 1.4, 0, Math.PI * 2); ctx.fill(); // göz
-    ctx.strokeStyle = '#a9743f'; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(5, h - 47, 2.5, 0.1, 1.1); ctx.stroke(); // gülümseme
+    ctx.beginPath(); ctx.arc(4, hy, 1.5, 0, Math.PI * 2); ctx.fill();       // göz
+    ctx.fillStyle = '#d98f6a';                                              // yanak
+    ctx.beginPath(); ctx.arc(6.5, hy + 3, 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#8a5a32'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(4.5, hy + 3, 2.3, 0.15, 1.15); ctx.stroke();   // gülümseme
 
     ctx.restore();
   }

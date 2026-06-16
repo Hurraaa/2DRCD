@@ -126,12 +126,12 @@ button:active { transform: translateY(4px); box-shadow: 0 1px 0 #b07a18; }
 }
 .pad-left, .pad-right {
   position: absolute;
-  bottom: 26px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
   display: flex;
   gap: 16px;
 }
-.pad-left { left: 24px; }
-.pad-right { right: 24px; }
+.pad-left { left: calc(18px + env(safe-area-inset-left)); }
+.pad-right { right: calc(18px + env(safe-area-inset-right)); }
 .tbtn {
   pointer-events: auto;
   width: 74px; height: 74px;
@@ -153,4 +153,37 @@ button:active { transform: translateY(4px); box-shadow: 0 1px 0 #b07a18; }
 
 @media (pointer: coarse) {
   #touch-controls { display: block; }
+  /* Oyun alanını yukarı kaydır, altta butonlara yer aç */
+  #game-wrap { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  #hint { bottom: calc(84px + env(safe-area-inset-bottom)); }
+}
+
+/* Dikey mod uyarısı */
+#rotate-notice {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #11131a;
+  color: #eaf6f6;
+  font-size: 20px;
+  line-height: 1.6;
+  padding: 30px;
+}
+#rotate-notice .rotate-icon {
+  font-size: 64px;
+  margin-bottom: 18px;
+  animation: rotateHint 1.6s ease-in-out infinite;
+}
+@keyframes rotateHint {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-90deg); }
+}
+/* Sadece dokunmatik + dikey ekranlarda göster */
+@media (pointer: coarse) and (orientation: portrait) {
+  #rotate-notice { display: flex; }
 }
