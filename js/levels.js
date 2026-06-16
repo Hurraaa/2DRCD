@@ -266,4 +266,36 @@ const LEVELS = [
     ],
     goal: { x: 2180, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 10: Yerden Fırlayan (popSpikes öğretir) ----------
+     Tehlike bastığın ZEMİNDEN gelir; tetik için yerde olman gerekir →
+     çaresi ÜSTÜNDEN ZIPLAMAK (havadayken tetiklenmez). Şüpheli zemin
+     yamalarını (yerdeki delikler) zıplayarak geç. Çarpıt: rahatladığın düzlükte yama. */
+  {
+    name: 'Yerden Fırlayan',
+    hint: 'Yerdeki delikli yamalara basma — çiviler fırlar! ÜSTÜNDEN ZIPLA (havada tetiklenmez)',
+    width: 2380, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 400, h: 160 },          // S0 (..360)
+      { x: 360, y: 500, w: 900, h: 160 },          // yama koridoru (360..1260)
+      { x: 1390, y: 500, w: 300, h: 160 },          // gap sonrası + checkpoint (1390..1690)
+      { x: 1820, y: 500, w: 420, h: 160 },          // çarpıt düzlüğü + final (1820..2240)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1450, y: 500 } ],
+    spikes: [
+      { x: 1260, y: 560, w: 130, h: 70 },           // gerçek boşluk (1260..1390)
+      { x: 1690, y: 560, w: 130, h: 70 },           // gerçek boşluk (1690..1820)
+    ],
+    machines: [
+      // Koridor: üstünden zıplanacak zemin yamaları (tetik için yerde olmak şart)
+      { type: 'popSpikes', x: 500, y: 474, w: 60 },  // göster (ilk: deliği fark et)
+      { type: 'popSpikes', x: 720, y: 474, w: 60 },
+      { type: 'popSpikes', x: 940, y: 474, w: 60 },
+      // ÇARPIT: checkpoint sonrası "güvenli" düzlükte yama — rahatlayıp yürüyen ölür
+      { type: 'popSpikes', x: 1980, y: 474, w: 70 },
+    ],
+    goal: { x: 2170, y: 440, w: 30, h: 60 },
+  },
 ];
