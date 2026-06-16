@@ -220,13 +220,16 @@ const Machines = (() => {
       this.bottomY = d.bottomY;        // ezme noktası
       this.h = d.h || 50;
       this.period = d.period || 150;
-      this.t = d.phase || 0;
+      this.phase = d.phase || 0;
+      this.t = this.phase;
       this.y = this.topY;
       this.state = 'wait';
+      this._wasBottom = false;
       this.solid = { x: this.x, y: this.y, w: this.w, h: this.h, carry: { dx: 0, dy: 0 } };
       this.smashing = false;
     }
-    update() {
+    reset() { this.t = this.phase || 0; this.y = this.topY; this.smashing = false; this._wasBottom = false; }
+    update(world) {
       this.t++;
       const cycle = this.t % this.period;
       const prevY = this.y;
@@ -242,6 +245,13 @@ const Machines = (() => {
         this.y = Engine.lerp(this.bottomY, this.topY, k);
         this.smashing = false;
       }
+      // Darbe geri bildirimi: yere ilk değdiği an sarsıntı + toz
+      const atBottom = this.y >= this.bottomY - 0.5;
+      if (atBottom && !this._wasBottom && world) {
+        world.requestShake(5);
+        world.burst(this.x + this.w / 2, this.y + this.h, 9, '#9a8a72', 7, 1.2);
+      }
+      this._wasBottom = atBottom;
       this.solid.carry.dy = this.y - prevY;
       this.solid.y = this.y;
     }
@@ -542,7 +552,10 @@ const Machines = (() => {
         if (--this.timer <= 0) this.state = 'fall';
       } else if (this.state === 'fall') {
         this.vy += 0.7; this.y += this.vy;
-        if (this.y >= this.groundY - this.r) { this.y = this.groundY - this.r; this.state = 'landed'; this.timer = this.respawnT; }
+        if (this.y >= this.groundY - this.r) {
+          this.y = this.groundY - this.r; this.state = 'landed'; this.timer = this.respawnT;
+          if (world) { world.requestShake(5); world.burst(this.x, this.groundY, 10, '#7a6a55', 8, 1.4); }
+        }
       } else if (this.state === 'landed') {
         if (--this.timer <= 0) this.reset();
       }

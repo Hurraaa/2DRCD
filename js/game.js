@@ -146,6 +146,16 @@ class World {
     this.particles = [];
   }
 
+  // Makinelerin kamera sarsıntısı istemesi için kanca (Game tarafından bağlanır)
+  requestShake(mag) { if (this._shake) this._shake(mag); }
+  // Toz/parçacık üret (darbe geri bildirimi)
+  burst(x, y, n, color, spread = 4, up = 2) {
+    for (let i = 0; i < n; i++) this.particles.push({
+      x, y, vx: (Math.random() - 0.5) * spread, vy: -Math.random() * up - 0.5,
+      life: 24 + Math.random() * 20, c: color
+    });
+  }
+
   /* ================= ÇİZİM ================= */
   draw(ctx, cam) {
     // Gökyüzü (ekran uzayı)
@@ -422,8 +432,9 @@ const Game = (() => {
     levelIdx = i;
     const def = LEVELS[i];
     world = new World(def);
+    world._shake = shake;            // makineler darbede kamera sarsar
     deaths = 0;
-    cam.x = 0; cam.y = 0;
+    cam.x = 0; cam.y = 0; cam.lookX = 0; cam.shake = 0;
     el.level.textContent = `Bölüm ${i + 1}/${LEVELS.length}`;
     el.name.textContent = def.name + (def.invert === 'lr' ? '  ⇆ TERS!' : '');
     el.deaths.textContent = `Ölüm: ${totalDeaths}`;
