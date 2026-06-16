@@ -201,7 +201,7 @@ class Player {
     const TANK = '#f3efe6', TANK_D = '#d6d0c2';       // kirli-beyaz atlet
     const SHORTS = '#3f5d8f', SHORTS_D = '#324c75';   // mavi şort
     const SHOES = '#5a3a22';                           // kahve ayakkabı
-    const HAIR = '#4a3322';                            // yanlarda saç (tepe kel)
+    const HAIR = '#c4beb2';                            // seyrek, kırlaşmış saç (yaşlı baba)
 
     // Gölge — dünya uzayında, son zemin seviyesine sabit (zıplayınca yukarı çıkmaz).
     // Havalandıkça hafifçe küçülüp soluyor.
@@ -293,16 +293,21 @@ class Player {
     // kulak
     ctx.beginPath(); ctx.arc(9, hy + 1, 2.6, 0, Math.PI * 2); ctx.fill();
 
-    // Yan saç (tepe kel, yanlarda + arkada saç bandı)
-    ctx.strokeStyle = HAIR; ctx.lineWidth = 3.4; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.arc(0, hy + 0.5, 9.6, Math.PI * 0.62, Math.PI * 1.7); ctx.stroke();
-    ctx.fillStyle = HAIR;                            // kulak üstü tutam
-    ctx.beginPath(); ctx.arc(-7.5, hy - 3, 2.4, 0, Math.PI * 2); ctx.fill();
+    // Seyrek, kırlaşmış saç: yanlarda kısa tutamlar + tepede birkaç ince tel
+    ctx.strokeStyle = HAIR; ctx.lineWidth = 2.2; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(0, hy + 1, 9.5, Math.PI * 1.12, Math.PI * 1.5); ctx.stroke();  // arka-alt tutam
+    ctx.beginPath(); ctx.arc(0, hy + 1, 9.5, Math.PI * 1.74, Math.PI * 1.96); ctx.stroke(); // kulak üstü ön
+    ctx.lineWidth = 1.2;                             // tepede 3 seyrek tel
+    ctx.beginPath();
+    ctx.moveTo(-3, hy - 8.4); ctx.lineTo(-2.4, hy - 11);
+    ctx.moveTo(0.2, hy - 9.2); ctx.lineTo(0.8, hy - 11.8);
+    ctx.moveTo(3.2, hy - 8.3); ctx.lineTo(3.8, hy - 10.7);
+    ctx.stroke();
 
-    // Endişeli kaşlar (kalkık)
-    ctx.strokeStyle = '#5a4030'; ctx.lineWidth = 1.6;
-    ctx.beginPath(); ctx.moveTo(1.5, hy - 3.5); ctx.lineTo(5.5, hy - 4.6); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-3, hy - 3.2); ctx.lineTo(-0.5, hy - 4.2); ctx.stroke();
+    // Kaşlar (kır, yumuşak — yorgun ama sevecen baba)
+    ctx.strokeStyle = '#a39c90'; ctx.lineWidth = 1.7;
+    ctx.beginPath(); ctx.moveTo(2, hy - 3.4); ctx.lineTo(5.6, hy - 3.8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-2.6, hy - 3.3); ctx.lineTo(0, hy - 3.7); ctx.stroke();
 
     // Gözler (küçük, şaşkın)
     ctx.fillStyle = '#fff';
