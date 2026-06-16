@@ -185,5 +185,37 @@ for (let li = 0; li < LEVELS.length; li++) {
   console.log(`  Bölüm 6 ters kontrol testi: sağ→sol=${p.x < x0}`);
 })();
 
+// --- Yeni aldatıcı tuzaklar: örnekle, çalıştır, çökme/NaN + reset kontrolü ---
+(function trapLab() {
+  const def = {
+    name: 'Tuzak Laboratuvarı', width: 1700, height: 600, spawn: { x: 60, y: 440 },
+    solids: [{ x: -40, y: 500, w: 1800, h: 140 }],
+    slopes: [], ladders: [], ropesV: [], ropesH: [], spikes: [],
+    machines: [
+      { type: 'fakeTile', x: 200, y: 480, w: 60, delay: 12 },
+      { type: 'fallingRock', x: 420, topY: 80, groundY: 500, triggerX: 400 },
+      { type: 'popSpikes', x: 620, y: 474, w: 70 },
+      { type: 'iceFloor', x: 820, y: 486, w: 140 },
+      { type: 'dartTrap', x: 1200, y: 470, dir: -1, tripX1: 980, tripX2: 1040 },
+    ],
+    goal: { x: 1640, y: 440, w: 30, h: 60 },
+  };
+  const world = new World(def);
+  const p = world.player;
+  let nan = false, anyDeath = false;
+  for (let f = 0; f < 800; f++) {
+    Input._sim.clear(); Input._sim.set('right', true);
+    if (f % 36 < 6) Input._sim.set('jump', true);
+    Input.preUpdate(); world.update(); world.draw(drawCtx, cam); Input.postUpdate();
+    if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) { nan = true; break; }
+    if (p.dead) { anyDeath = true; p.reset(); world.resetDynamic(); }
+  }
+  check(!nan, 'Tuzak laboratuvarı: NaN oluştu');
+  // reset sonrası fakeTile yeniden katı mı? (idle'a dönmeli)
+  const ft = world.machines[0]; ft.reset();
+  check(ft.getSolid() !== null, 'FakeTile reset sonrası katı değil');
+  console.log(`  Tuzak laboratuvarı: çökme yok • tuzaklar tetiklendi (ölüm gözlendi=${anyDeath})`);
+})();
+
 if (failures === 0) console.log('\n✓ Tüm bölümler çökmeden çalıştı, NaN yok.');
 else { console.log(`\n✗ ${failures} sorun bulundu.`); process.exit(1); }

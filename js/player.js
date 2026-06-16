@@ -103,9 +103,11 @@ class Player {
       }
 
       // --- Normal yatay hareket ---
-      if (inp.left)  { this.vx -= Player.MOVE; this.facing = -1; }
-      if (inp.right) { this.vx += Player.MOVE; this.facing = 1; }
-      if (!inp.left && !inp.right) this.vx *= Player.FRICTION;
+      const onIce = this.grounded && this.standingOn && this.standingOn.ice;
+      const accel = onIce ? Player.MOVE * 0.35 : Player.MOVE;   // buzda tutuş zayıf
+      if (inp.left)  { this.vx -= accel; this.facing = -1; }
+      if (inp.right) { this.vx += accel; this.facing = 1; }
+      if (!inp.left && !inp.right) this.vx *= (onIce ? 0.99 : Player.FRICTION); // buzda fren tutmaz
       this.vx = Engine.clamp(this.vx, -Player.MAX_SPEED, Player.MAX_SPEED);
 
       // --- Yerçekimi ---

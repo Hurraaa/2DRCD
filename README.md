@@ -57,8 +57,17 @@ test/headless.js    # Tarayıcısız mantık testi (çökme/NaN + Bölüm 1 biti
 ## ➕ Yeni Bölüm Eklemek
 `js/levels.js` içindeki `LEVELS` dizisine bir nesne ekle. Kullanılabilir alanlar:
 `solids`, `slopes`, `ladders`, `ropesV`, `ropesH`, `spikes`, `machines`, `goal`, `spawn`.
-Makine türleri: `pendulum, pulley, conveyor, spring, movingPlatform, crusher,
-boulder, spikewall, sawblade, seesaw`.
+Makine türleri (basit makineler): `pendulum, pulley, conveyor, spring,
+movingPlatform, crusher, boulder, spikewall, sawblade, seesaw`.
+
+Aldatıcı tuzaklar ("basit görünür, şaşırtır"):
+- `fakeTile` — normal zemin gibi görünür, basınca çöker (`delay`, `respawn`, `hint`)
+- `fallingRock` — `triggerX` noktası geçilince tavandan kaya iner (`topY`, `groundY`)
+- `popSpikes` — tetik bölgesine basınca yerden çiviler fırlar (`triggerX1/2`, `hold`)
+- `dartTrap` — görünmez tel (`tripX1/2`) geçilince duvardan ok fırlar (`dir`, `speed`)
+- `iceFloor` — çok kaygan zemin; fren tutmaz, dikkatli oyuncu kayıp düşer
+
+Oyuncu ölünce tuzaklar otomatik yeniden kurulur (`World.resetDynamic`).
 
 İpucu: oyuncu ~120px yukarı zıplar, ~160px yatay atlar — boşlukları buna göre ayarla.
 

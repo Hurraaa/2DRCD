@@ -443,10 +443,210 @@ const Machines = (() => {
     }
   }
 
+  /* ===================================================================
+     ALDATICI TUZAKLAR — "basit görünür, şaşırtır, zeki sananı öldürür"
+     =================================================================== */
+
+  /* --- Çökme platformu / kapan: normal zemin gibi görünür, basınca düşer --- */
+  class FakeTile {
+    constructor(d) {
+      this.x = d.x; this.y = d.y; this.w = d.w || 60; this.h = d.h || 16;
+      this.delay = (d.delay != null) ? d.delay : 22;   // basınca kaç kare sonra çöker
+      this.respawnT = d.respawn || 150;                // tekrar belirme
+      this.hint = d.hint || false;                     // çatlak ipucu göster?
+      this.solid = { x: this.x, y: this.y, w: this.w, h: this.h };
+      this.state = 'idle'; this.timer = 0; this.shake = 0; this.fallY = 0; this.fallV = 0;
+    }
+    reset() { this.state = 'idle'; this.timer = 0; this.shake = 0; this.fallY = 0; this.fallV = 0; }
+    update(world) {
+      const onIt = world.player.standingOn === this.solid;
+      if (this.state === 'idle') {
+        if (onIt) { this.state = 'crack'; this.timer = this.delay; }
+      } else if (this.state === 'crack') {
+        this.shake = Math.sin(this.timer * 0.9) * 2;
+        if (--this.timer <= 0) { this.state = 'gone'; this.timer = this.respawnT; this.shake = 0; this.fallY = 0; this.fallV = 0; }
+      } else if (this.state === 'gone') {
+        this.fallV += 0.6; this.fallY += this.fallV;   // düşen enkaz animasyonu
+        if (--this.timer <= 0) this.state = 'idle';
+      }
+    }
+    getSolid() { return (this.state === 'gone') ? null : this.solid; }
+    draw(ctx) {
+      if (this.state === 'gone') {
+        // düşen parça (kısa süre) + boş iz
+        if (this.fallY < 140) {
+          ctx.fillStyle = '#6b6f78';
+          Engine.roundRect(ctx, this.x, this.y + this.fallY, this.w, this.h, 3); ctx.fill();
+        }
+        ctx.strokeStyle = 'rgba(0,0,0,0.16)'; ctx.lineWidth = 1;
+        ctx.strokeRect(this.x, this.y, this.w, this.h);
+        return;
+      }
+      const sx = this.x + this.shake;
+      // NORMAL taş platform gibi (şüphe çekmesin)
+      ctx.fillStyle = '#6b6f78';
+      Engine.roundRect(ctx, sx, this.y, this.w, this.h, 4); ctx.fill();
+      ctx.fillStyle = '#868b95'; ctx.fillRect(sx, this.y, this.w, 5);
+      ctx.fillStyle = '#565a62'; ctx.fillRect(sx, this.y + this.h - 4, this.w, 4);
+      if (this.state === 'crack' || this.hint) {       // çatlaklar (basınca belli olur)
+        ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx + this.w * 0.3, this.y); ctx.lineTo(sx + this.w * 0.42, this.y + this.h);
+        ctx.moveTo(sx + this.w * 0.62, this.y); ctx.lineTo(sx + this.w * 0.52, this.y + this.h);
+        ctx.stroke();
+      }
+    }
+  }
+
+  /* --- Tavandan düşen kaya: belirli noktayı geçince yukarıdan iner --- */
+  class FallingRock {
+    constructor(d) {
+      this.x = d.x; this.topY = (d.topY != null) ? d.topY : 70;
+      this.groundY = d.groundY || 500; this.r = d.r || 24;
+      this.tx1 = (d.triggerX1 != null) ? d.triggerX1 : (d.triggerX - 36);
+      this.tx2 = (d.triggerX2 != null) ? d.triggerX2 : (d.triggerX + 36);
+      this.delay = (d.delay != null) ? d.delay : 8;
+      this.respawnT = d.respawn || 110;
+      this.state = 'ready'; this.y = this.topY; this.vy = 0; this.timer = 0;
+    }
+    reset() { this.state = 'ready'; this.y = this.topY; this.vy = 0; this.timer = 0; }
+    update(world) {
+      const p = world.player;
+      if (this.state === 'ready') {
+        if (p.cx > this.tx1 && p.cx < this.tx2) { this.state = 'warn'; this.timer = this.delay; }
+      } else if (this.state === 'warn') {
+        if (--this.timer <= 0) this.state = 'fall';
+      } else if (this.state === 'fall') {
+        this.vy += 0.7; this.y += this.vy;
+        if (this.y >= this.groundY - this.r) { this.y = this.groundY - this.r; this.state = 'landed'; this.timer = this.respawnT; }
+      } else if (this.state === 'landed') {
+        if (--this.timer <= 0) this.reset();
+      }
+    }
+    deadlyCircles() { return this.state === 'fall' ? [{ x: this.x, y: this.y, r: this.r - 3 }] : []; }
+    draw(ctx) {
+      // tavan yuvası
+      ctx.fillStyle = '#4a4038'; ctx.fillRect(this.x - this.r - 2, this.topY - this.r - 4, this.r * 2 + 4, 6);
+      // uyarı (toz/sallanma)
+      if (this.state === 'warn') {
+        ctx.fillStyle = `rgba(230,70,60,${0.4 + 0.4 * Math.abs(Math.sin(this.timer * 0.6))})`;
+        ctx.beginPath(); ctx.arc(this.x, this.topY + this.r + 8, 5, 0, Math.PI * 2); ctx.fill();
+      }
+      // kaya (ready'de tavanda asılı durur — ipucu)
+      ctx.save(); ctx.translate(this.x, this.y);
+      ctx.fillStyle = '#6e6256';
+      ctx.beginPath(); ctx.arc(0, 0, this.r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#5a5048';
+      for (let i = 0; i < 4; i++) { const a = i / 4 * Math.PI * 2; ctx.beginPath(); ctx.arc(Math.cos(a) * this.r * 0.4, Math.sin(a) * this.r * 0.4, this.r * 0.16, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+    }
+  }
+
+  /* --- Yerden fırlayan çiviler: tetik bölgesine basınca aniden çıkar --- */
+  class PopSpikes {
+    constructor(d) {
+      this.x = d.x; this.y = d.y; this.w = d.w || 60; this.h = d.h || 26;
+      this.tx1 = (d.triggerX1 != null) ? d.triggerX1 : this.x - 28;
+      this.tx2 = (d.triggerX2 != null) ? d.triggerX2 : this.x + this.w + 28;
+      this.delay = (d.delay != null) ? d.delay : 7;
+      this.hold = d.hold || 46;
+      this.ext = 0; this.state = 'idle'; this.timer = 0;
+    }
+    reset() { this.ext = 0; this.state = 'idle'; this.timer = 0; }
+    update(world) {
+      const p = world.player;
+      if (this.state === 'idle') {
+        if (p.cx > this.tx1 && p.cx < this.tx2 && p.grounded) { this.state = 'warn'; this.timer = this.delay; }
+      } else if (this.state === 'warn') {
+        if (--this.timer <= 0) { this.state = 'up'; this.timer = this.hold; }
+      } else if (this.state === 'up') {
+        this.ext = Math.min(this.h, this.ext + 5);
+        if (--this.timer <= 0) this.state = 'down';
+      } else if (this.state === 'down') {
+        this.ext = Math.max(0, this.ext - 3);
+        if (this.ext <= 0) this.reset();
+      }
+    }
+    deadlyRects() { return this.ext > 4 ? [{ x: this.x, y: this.y + this.h - this.ext, w: this.w, h: this.ext }] : []; }
+    draw(ctx) {
+      if (this.ext <= 0) {  // gizli delikler (idle)
+        ctx.fillStyle = 'rgba(0,0,0,0.13)';
+        for (let i = 4; i < this.w; i += 12) ctx.fillRect(this.x + i, this.y + this.h - 3, 6, 3);
+        return;
+      }
+      const topY = this.y + this.h - this.ext;
+      ctx.fillStyle = '#9aa0a6';
+      const n = Math.max(1, Math.floor(this.w / 14)); const bw = this.w / n;
+      for (let i = 0; i < n; i++) {
+        ctx.beginPath();
+        ctx.moveTo(this.x + i * bw, this.y + this.h);
+        ctx.lineTo(this.x + i * bw + bw / 2, topY);
+        ctx.lineTo(this.x + (i + 1) * bw, this.y + this.h);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+  }
+
+  /* --- Ok/dart tuzağı: görünmez tel geçilince duvardan ok fırlar --- */
+  class DartTrap {
+    constructor(d) {
+      this.x = d.x; this.y = d.y;
+      this.dir = d.dir || -1;                  // okun gidiş yönü (-1 sola, +1 sağa)
+      this.tx1 = d.tripX1; this.tx2 = d.tripX2;
+      this.speed = d.speed || 7; this.r = d.r || 7; this.range = d.range || 420;
+      this.state = 'ready'; this.px = this.x; this.cool = 0;
+    }
+    reset() { this.state = 'ready'; this.px = this.x; this.cool = 0; }
+    update(world) {
+      const p = world.player;
+      if (this.cool > 0) this.cool--;
+      if (this.state === 'ready') {
+        if (this.cool <= 0 && p.cx > this.tx1 && p.cx < this.tx2) { this.state = 'fire'; this.px = this.x; }
+      } else if (this.state === 'fire') {
+        this.px += this.speed * this.dir;
+        if (Math.abs(this.px - this.x) > this.range) { this.state = 'ready'; this.cool = 36; }
+      }
+    }
+    deadlyCircles() { return this.state === 'fire' ? [{ x: this.px, y: this.y, r: this.r }] : []; }
+    draw(ctx) {
+      ctx.fillStyle = '#3a3a3a';               // duvar deliği
+      ctx.fillRect(this.dir < 0 ? this.x : this.x - 7, this.y - 9, 7, 18);
+      if (this.state === 'fire') {
+        ctx.save(); ctx.translate(this.px, this.y);
+        ctx.fillStyle = '#5a4632';             // ok gövdesi
+        ctx.fillRect(-8, -1.5, 16, 3);
+        ctx.fillStyle = '#9aa0a6';             // uç
+        ctx.beginPath();
+        ctx.moveTo(8 * this.dir, 0); ctx.lineTo(8 * this.dir - 5 * this.dir, -4); ctx.lineTo(8 * this.dir - 5 * this.dir, 4);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+    }
+  }
+
+  /* --- Buz zemini: çok kaygan, fren tutmaz, dikkatli oyuncu kayıp düşer --- */
+  class IceFloor {
+    constructor(d) { this.solid = { x: d.x, y: d.y, w: d.w, h: d.h || 16, ice: true }; }
+    getSolid() { return this.solid; }
+    draw(ctx) {
+      const s = this.solid;
+      ctx.fillStyle = '#bfe7f2';
+      Engine.roundRect(ctx, s.x, s.y, s.w, s.h, 4); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.fillRect(s.x, s.y, s.w, 4);
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1;
+      for (let i = 8; i < s.w; i += 22) {
+        ctx.beginPath(); ctx.moveTo(s.x + i, s.y + 3); ctx.lineTo(s.x + i + 8, s.y + s.h - 3); ctx.stroke();
+      }
+    }
+  }
+
   const registry = {
     pendulum: Pendulum, pulley: Pulley, conveyor: Conveyor,
     spring: Spring, movingPlatform: MovingPlatform, crusher: Crusher,
-    boulder: Boulder, spikewall: SpikeWall, sawblade: Sawblade, seesaw: Seesaw
+    boulder: Boulder, spikewall: SpikeWall, sawblade: Sawblade, seesaw: Seesaw,
+    // Aldatıcı tuzaklar
+    fakeTile: FakeTile, fallingRock: FallingRock, popSpikes: PopSpikes,
+    dartTrap: DartTrap, iceFloor: IceFloor
   };
 
   function create(def) {

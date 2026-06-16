@@ -65,7 +65,7 @@ class World {
     // Bu kareye ait katı yüzeyleri topla
     this.solidsThisFrame = this.solids.slice();
     for (const m of this.machines) {
-      if (m.getSolid) this.solidsThisFrame.push(m.getSolid());
+      if (m.getSolid) { const s = m.getSolid(); if (s) this.solidsThisFrame.push(s); }  // çökmüş tuzak null döner
       if (m.getSolids) for (const s of m.getSolids()) this.solidsThisFrame.push(s);
     }
     // Dinamik + statik rampalar
@@ -110,6 +110,12 @@ class World {
         life: 30 + Math.random() * 20, c: i % 2 ? '#f3c89b' : '#e8413a'
       });
     }
+  }
+
+  // Oyuncu öldüğünde tuzakları/durumları yeniden kur (yeniden başlatma)
+  resetDynamic() {
+    for (const m of this.machines) if (m.reset) m.reset();
+    this.particles = [];
   }
 
   /* ================= ÇİZİM ================= */
@@ -368,7 +374,7 @@ const Game = (() => {
 
   function respawn() {
     world.player.reset();
-    world.particles = [];
+    world.resetDynamic();
   }
 
   function updateCamera() {
