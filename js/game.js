@@ -23,6 +23,7 @@ class World {
     this.solidsThisFrame = [];
     this.slopesThisFrame = [];
     this.particles = [];
+    this.signals = {};                 // plaka→kapı sinyalleri
   }
 
   // --- Tırmanılabilir alan (merdiven / dikey halat) ---
@@ -74,7 +75,9 @@ class World {
   update() {
     const p = this.player;
 
-    // Makineleri güncelle
+    // Plaka→kapı sinyalleri (her kare sıfırlanır, plakalar set eder)
+    this.signals = {};
+    // Makineleri güncelle (plakalar kapılardan ÖNCE gelmeli)
     for (const m of this.machines) if (m.update) m.update(this);
 
     // Bu kareye ait katı yüzeyleri topla

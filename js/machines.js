@@ -732,13 +732,118 @@ const Machines = (() => {
     }
   }
 
+  /* ===================================================================
+     ETKİLEŞİMLİ MEKANİKLER — kutu + basınç plakası + kapı (hesap gerektirir)
+     =================================================================== */
+
+  /* --- Taşınabilir kutu: oyuncu iter, yerçekimiyle düşer, katıdır --- */
+  class Box {
+    constructor(d) {
+      this.sx = d.x; this.sy = d.y; this.w = d.w || 56; this.h = d.h || 56;
+      this._isBox = true;
+      this._solid = { x: d.x, y: d.y, w: this.w, h: this.h };
+      this.reset();
+    }
+    reset() { this.x = this.sx; this.y = this.sy; this.vx = 0; this.vy = 0; this.grounded = false; this._solid.x = this.x; this._solid.y = this.y; }
+    _solidsOnly(world) { return world.solids; }            // sadece statik zemine çarpışır (basitlik)
+    update(world) {
+      const p = world.player;
+      // Dikey: yerçekimi + zemine otur
+      this.vy += 0.6; if (this.vy > 16) this.vy = 16;
+      this.y += this.vy; this.grounded = false;
+      for (const s of world.solids) {
+        if (Engine.aabb(this.x, this.y, this.w, this.h, s.x, s.y, s.w, s.h)) {
+          if (this.vy > 0) { this.y = s.y - this.h; this.vy = 0; this.grounded = true; }
+          else if (this.vy < 0) { this.y = s.y + s.h; this.vy = 0; }
+        }
+      }
+      // Yatay: oyuncu yere basıp YÖNÜYLE (giriş) ittiğinde kutuyu sürer (ağır → yavaş).
+      // p.vx'e bakılmaz çünkü kutuya değince resolveX onu sıfırlar.
+      let push = 0;
+      const dir = p.moveDir || 0;
+      const vOverlap = (p.y < this.y + this.h - 4) && (p.y + p.h > this.y + 4);
+      if (p.grounded && vOverlap) {
+        if (dir > 0 && p.x + p.w >= this.x - 4 && p.x + p.w <= this.x + 16) push = 1;
+        else if (dir < 0 && p.x <= this.x + this.w + 4 && p.x >= this.x + this.w - 16) push = -1;
+      }
+      this.vx = push * 2.6;     // ağır kutu: oyuncudan (4.4) yavaş
+      this.x += this.vx;
+      for (const s of world.solids) {
+        if (Engine.aabb(this.x, this.y, this.w, this.h, s.x, s.y, s.w, s.h)) {
+          if (this.vx > 0) this.x = s.x - this.w; else if (this.vx < 0) this.x = s.x + s.w; this.vx = 0;
+        }
+      }
+      this._solid.x = this.x; this._solid.y = this.y;
+    }
+    getSolid() { return this._solid; }
+    draw(ctx) {
+      ctx.fillStyle = '#9a6a33';
+      Engine.roundRect(ctx, this.x, this.y, this.w, this.h, 4); ctx.fill();
+      ctx.strokeStyle = '#6e4a22'; ctx.lineWidth = 3;
+      ctx.strokeRect(this.x + 2, this.y + 2, this.w - 4, this.h - 4);
+      ctx.beginPath();
+      ctx.moveTo(this.x + 3, this.y + 3); ctx.lineTo(this.x + this.w - 3, this.y + this.h - 3);
+      ctx.moveTo(this.x + this.w - 3, this.y + 3); ctx.lineTo(this.x + 3, this.y + this.h - 3);
+      ctx.stroke();
+      ctx.fillStyle = '#b07a3a'; ctx.fillRect(this.x, this.y, this.w, 4);
+    }
+  }
+
+  /* --- Basınç plakası: kutu ya da oyuncu üstündeyken sinyal verir --- */
+  class PressurePlate {
+    constructor(d) { this.x = d.x; this.y = d.y; this.w = d.w || 64; this.id = d.id || 'A'; this.pressed = false; }
+    reset() { this.pressed = false; }
+    update(world) {
+      const band = { x: this.x, y: this.y - 16, w: this.w, h: 20 };
+      let pr = false;
+      const p = world.player;
+      if (Engine.aabb(p.x, p.y, p.w, p.h, band.x, band.y, band.w, band.h) && p.grounded) pr = true;
+      for (const m of world.machines) {
+        if (m._isBox) { const b = m.getSolid(); if (Engine.aabb(b.x, b.y, b.w, b.h, band.x, band.y, band.w, band.h)) pr = true; }
+      }
+      this.pressed = pr;
+      world.signals[this.id] = pr;
+    }
+    draw(ctx) {
+      const drop = this.pressed ? 5 : 0;
+      ctx.fillStyle = this.pressed ? '#5fae3f' : '#c0863a';
+      Engine.roundRect(ctx, this.x, this.y - 6 + drop, this.w, 8, 3); ctx.fill();
+      ctx.fillStyle = '#444';
+      ctx.fillRect(this.x - 3, this.y + 1, this.w + 6, 4);
+    }
+  }
+
+  /* --- Kapı: bağlı plaka basılıyken AÇIK (katı değil), değilse engeller --- */
+  class Door {
+    constructor(d) { this.x = d.x; this.y = d.y; this.w = d.w || 22; this.h = d.h || 130; this.link = d.link || 'A'; this.open = false; this._solid = { x: d.x, y: d.y, w: this.w, h: this.h }; }
+    reset() { this.open = false; }
+    update(world) { this.open = !!world.signals[this.link]; }
+    getSolid() { return this.open ? null : this._solid; }
+    draw(ctx) {
+      // yuva/çerçeve
+      ctx.fillStyle = '#3a3a3a';
+      ctx.fillRect(this.x - 4, this.y - 6, this.w + 8, 6);
+      if (!this.open) {
+        Engine.hazardBeam(ctx, this.x, this.y, this.w, this.h);
+        ctx.fillStyle = '#222';
+        for (let i = 10; i < this.h; i += 22) ctx.fillRect(this.x + 2, this.y + i, this.w - 4, 3);
+      } else {
+        // açık: ince iz
+        ctx.fillStyle = '#f4c430';
+        ctx.fillRect(this.x, this.y - 6, this.w, 8);
+      }
+    }
+  }
+
   const registry = {
     pendulum: Pendulum, pulley: Pulley, conveyor: Conveyor,
     spring: Spring, movingPlatform: MovingPlatform, crusher: Crusher,
     boulder: Boulder, spikewall: SpikeWall, sawblade: Sawblade, seesaw: Seesaw,
     // Aldatıcı tuzaklar
     fakeTile: FakeTile, fallingRock: FallingRock, popSpikes: PopSpikes,
-    dartTrap: DartTrap, iceFloor: IceFloor, decoyFlag: DecoyFlag
+    dartTrap: DartTrap, iceFloor: IceFloor, decoyFlag: DecoyFlag,
+    // Etkileşimli (hesap gerektiren)
+    box: Box, plate: PressurePlate, door: Door
   };
 
   function create(def) {

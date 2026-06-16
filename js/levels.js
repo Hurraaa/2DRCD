@@ -496,4 +496,27 @@ const LEVELS = [
     ],
     goal: { x: 2150, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 18: Kutu ve Kapı (box + plate + door — HESAP bulmacası) ----------
+     Kapı yolu kapatır. Açmak için kutuyu çukurdaki plakaya bırakmalısın —
+     ama kutu hedefin TERSİNE (geri) itilmeli: önce üstünden atla, sonra SOLA it.
+     Düz yürüyen kutuyu ileri iter, kapı açılmaz, takılır. (Yansıma/refleks değil, düşünme.) */
+  {
+    name: 'Kutu ve Kapı',
+    hint: 'Kapı kapalı! Kutunun üstünden atla, sonra kutuyu GERİ (sola) plakaya it — kapı açılır, sonra geç',
+    width: 1560, height: 700,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 1540, h: 200 },          // tek düz koridor (..1500)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [],
+    spikes: [],
+    machines: [
+      { type: 'plate', x: 280, y: 500, w: 60, id: 'A' },              // plaka (SOLDA — kutu geri itilmeli)
+      { type: 'box', x: 620, y: 440, w: 60, h: 60 },                   // itilebilir kutu
+      { type: 'door', x: 980, y: 380, w: 24, h: 130, link: 'A' },     // kapı (plaka 'A' basılıyken açılır)
+    ],
+    goal: { x: 1400, y: 440, w: 30, h: 60 },
+  },
 ];

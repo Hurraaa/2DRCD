@@ -55,6 +55,7 @@ class Player {
     if (this.dead || this.won) return;
     const inp = Input.state;
     const prevBottom = this.bottom;
+    this.moveDir = (inp.right ? 1 : 0) - (inp.left ? 1 : 0);   // kutu itme yönü (giriş)
 
     // --- Tırmanma alanı kontrolü ---
     const ladder = world.climbableAt(this.cx, this.cy, this.x, this.y, this.w, this.h);
