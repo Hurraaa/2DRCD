@@ -515,7 +515,7 @@ const LEVELS = [
     machines: [
       { type: 'plate', x: 280, y: 500, w: 60, id: 'A' },              // plaka (SOLDA — kutu geri itilmeli)
       { type: 'box', x: 620, y: 440, w: 60, h: 60 },                   // itilebilir kutu
-      { type: 'door', x: 980, y: 380, w: 24, h: 130, link: 'A' },     // kapı (plaka 'A' basılıyken açılır)
+      { type: 'door', x: 980, y: 200, w: 24, h: 310, link: 'A' },     // kapı: zıplama erişiminin ÜSTÜNE (200..510) — üstünden geçilemez
     ],
     goal: { x: 1400, y: 440, w: 30, h: 60 },
   },
