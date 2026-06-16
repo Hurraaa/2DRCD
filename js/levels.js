@@ -230,4 +230,40 @@ const LEVELS = [
     ],
     goal: { x: 1920, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 9: Buz Üstünde (iceFloor öğretir) ----------
+     Göster (güvenli buz) → Denet (kayan kenardan zıpla) → Çarpıt
+     ("daha hızlı daha iyi değil": kısa buz adasında duramazsın, anında tekrar zıpla).
+     Buz momentum yükü kattığı için boşluklar 130px (ORTA). */
+  {
+    name: 'Buz Üstünde',
+    hint: 'Buzda FREN YOK! Hızını ayarla, kayan kenardan zıpla • Kısa buz adasında durma — anında tekrar zıpla',
+    width: 2400, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 400, h: 160 },          // S0 (..360)
+      { x: 520, y: 500, w: 240, h: 160 },          // göster sonrası zemin (520..760)
+      { x: 1110, y: 500, w: 300, h: 160 },         // denet sonrası zemin (1110..1410)
+      { x: 1980, y: 500, w: 300, h: 160 },         // final zemin (1980..2280)
+      // buz dolguları (üstü buz yüzeyi, altı kahve)
+      { x: 360, y: 516, w: 160, h: 124 },
+      { x: 760, y: 516, w: 220, h: 124 },
+      { x: 1410, y: 516, w: 160, h: 124 },
+      { x: 1700, y: 516, w: 150, h: 124 },         // kısa buz adası
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1180, y: 500 } ],
+    spikes: [
+      { x: 980, y: 560, w: 130, h: 70 },           // denet boşluğu (980..1110)
+      { x: 1570, y: 560, w: 130, h: 70 },          // çarpıt boşluk 1 (1570..1700)
+      { x: 1850, y: 560, w: 130, h: 70 },          // çarpıt boşluk 2 (1850..1980)
+    ],
+    machines: [
+      { type: 'iceFloor', x: 360,  y: 500, w: 160, h: 16 },   // göster (güvenli, kaymayı hisset)
+      { type: 'iceFloor', x: 760,  y: 500, w: 220, h: 16 },   // denet (kenardan zıpla)
+      { type: 'iceFloor', x: 1410, y: 500, w: 160, h: 16 },   // çarpıt giriş buzu
+      { type: 'iceFloor', x: 1700, y: 500, w: 150, h: 16 },   // kısa buz adası (durma!)
+    ],
+    goal: { x: 2180, y: 440, w: 30, h: 60 },
+  },
 ];
