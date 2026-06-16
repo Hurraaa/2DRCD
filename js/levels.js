@@ -329,4 +329,32 @@ const LEVELS = [
     ],
     goal: { x: 2200, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 12: Sahte Bayrak (decoyFlag öğretir) ----------
+     Bariz bayrak TUZAK (yaklaşınca taban çivileri); gerçek çıkış merdivenle YUKARIDA.
+     Adil: tetik uzaktan — oyuncu ~90px önce çiviyi görüp durabilir; checkpoint ucuz.
+     Gözlem + çıkarım sınar: "en kolay görünen bayrağa güvenme". */
+  {
+    name: 'Sahte Bayrak',
+    hint: 'Bariz bayrağa koşma — yaklaşınca çiviler fırlar! Gerçek çıkış MERDİVENLE yukarıda',
+    width: 1480, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 440, h: 160 },          // S0 (..400)
+      { x: 530, y: 500, w: 770, h: 160 },          // alt zemin: merdiven + sahte bayrak (530..1300)
+      { x: 800, y: 330, w: 300, h: 16 },           // ÜST ledge (gerçek hedef burada; ince ki alt yolu kapatmasın)
+    ],
+    slopes: [],
+    ladders: [ { x: 820, y: 330, w: 26, h: 170 } ], // merdiven: alt zeminden üst platforma
+    ropesV: [], ropesH: [],
+    checkpoints: [ { x: 600, y: 500 } ],
+    spikes: [
+      { x: 400, y: 560, w: 130, h: 70 },           // gerçek boşluk (400..530)
+    ],
+    machines: [
+      // Sahte bayrak: yaklaşınca taban çivileri (tetik uzaktan → adil uyarı)
+      { type: 'decoyFlag', x: 1180, y: 440, groundY: 500, span: 96, triggerX1: 1040, triggerX2: 1320 },
+    ],
+    goal: { x: 1020, y: 270, w: 30, h: 60 },        // GERÇEK hedef: üst platformda
+  },
 ];
