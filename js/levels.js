@@ -357,4 +357,33 @@ const LEVELS = [
     ],
     goal: { x: 1020, y: 270, w: 30, h: 60 },        // GERÇEK hedef: üst platformda
   },
+
+  /* ---------- BÖLÜM 13: Taş ve Çivi (fallingRock + popSpikes kombinasyonu) ----------
+     İlk kombinasyon: yukarıdan taş (DURMA) + aşağıdan çivi (ÜSTÜNDEN ZIPLA). */
+  {
+    name: 'Taş ve Çivi',
+    hint: 'Yukarıdan taş düşer (durma), aşağıdan çivi fırlar (üstünden zıpla) — ikisini birden idare et',
+    width: 2090, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 420, h: 160 },          // S0 (..380)
+      { x: 380, y: 500, w: 900, h: 160 },          // koridor (380..1280)
+      { x: 1410, y: 500, w: 560, h: 160 },          // çarpıt + final (1410..1970)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1480, y: 500 } ],
+    spikes: [
+      { x: 1280, y: 560, w: 130, h: 70 },           // gerçek boşluk (1280..1410)
+    ],
+    machines: [
+      { type: 'popSpikes', x: 540, y: 474, w: 60 },
+      { type: 'fallingRock', x: 720, topY: 80, groundY: 500, triggerX: 720, r: 24, delay: 18 },
+      { type: 'popSpikes', x: 900, y: 474, w: 60 },
+      { type: 'fallingRock', x: 1080, topY: 80, groundY: 500, triggerX: 1080, r: 24, delay: 16 },
+      // ÇARPIT: yama + hemen ardından taş (zıpla ve durma)
+      { type: 'popSpikes', x: 1540, y: 474, w: 60 },
+      { type: 'fallingRock', x: 1680, topY: 80, groundY: 500, triggerX: 1680, r: 24, delay: 14 },
+    ],
+    goal: { x: 1870, y: 440, w: 30, h: 60 },
+  },
 ];
