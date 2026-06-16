@@ -27,6 +27,7 @@ class Player {
     this.animTime = 0;
     this.standingOn = null;
     this.lastGroundY = this.spawnY + this.h;   // gölge için son zemin seviyesi
+    this.hangCooldown = 0;                      // halat bırakınca yeniden tutunma gecikmesi
   }
 
   get cx() { return this.x + this.w / 2; }
@@ -50,18 +51,25 @@ class Player {
     const ladder = world.climbableAt(this.cx, this.cy, this.x, this.y, this.w, this.h);
     const hbar = world.hangBarAt(this.cx, this.y, this.w);
 
-    // Yatay halatta asılma
-    if (hbar && !this.grounded && (this.hanging || inp.up)) {
+    if (this.hangCooldown > 0) this.hangCooldown--;
+
+    // Yatay halata OTOMATİK tutunma: zıplayıp bara değince kendi yakalar
+    // (yukarı tuşu gerekmez). Yükselirken/zirvede yakalar.
+    if (hbar && !this.grounded && this.hangCooldown <= 0 && (this.hanging || this.vy <= 1.2)) {
       this.hanging = true;
       this.climbing = false;
-      this.y = hbar.y - 6;       // ele asılı yükseklik
       this.vy = 0;
       this.vx = 0;
       if (inp.left)  { this.x -= Player.CLIMB_SPEED; this.facing = -1; }
       if (inp.right) { this.x += Player.CLIMB_SPEED; this.facing = 1; }
-      // Halattan zıplayıp bırakma
-      if (Input.jumpPressed && inp.down) { this.hanging = false; }
-      else if (Input.jumpPressed) { this.hanging = false; this.vy = Player.JUMP_VEL * 0.8; }
+      // İpin sarkma eğrisine hizala (orta kısımda aşağıda) — eller ipe değsin,
+      // baş ve omuzlar ellerin altında kalsın.
+      const t = Engine.clamp((this.cx - hbar.x) / hbar.w, 0, 1);
+      const sagY = hbar.y + Math.sin(t * Math.PI) * 14;   // _drawRopeH ile aynı sarkma
+      this.y = sagY + 18;        // gövde ipin altında asılı
+      // Bırakma: zıpla = yukarı hopla • aşağı = düş
+      if (Input.jumpPressed) { this.hanging = false; this.vy = Player.JUMP_VEL * 0.8; this.hangCooldown = 16; }
+      else if (inp.down) { this.hanging = false; this.hangCooldown = 16; }
       if (this.cx < hbar.x || this.cx > hbar.x + hbar.w) this.hanging = false;
       this.animTime += 0.2;
     } else {
@@ -263,8 +271,9 @@ class Player {
     ctx.strokeStyle = SKIN; ctx.lineWidth = 6;
     ctx.beginPath();
     if (this.hanging) {
-      ctx.moveTo(-7, h - 37); ctx.lineTo(-6, h - 47);
-      ctx.moveTo(7, h - 37);  ctx.lineTo(6, h - 47);
+      // eller başın üstünde, ipe asılı (kollar yukarı uzanır)
+      ctx.moveTo(-5, h - 38); ctx.lineTo(-3, h - 63);
+      ctx.moveTo(5, h - 38);  ctx.lineTo(3, h - 63);
     } else if (this.climbing) {
       ctx.moveTo(-7, h - 37); ctx.lineTo(-11, h - 45);
       ctx.moveTo(7, h - 37);  ctx.lineTo(11, h - 43 + armA);
@@ -274,9 +283,14 @@ class Player {
     }
     ctx.stroke();
     ctx.fillStyle = SKIN_D;                          // eller
-    const hx = this.hanging ? -6 : (this.climbing ? -11 : -9 + armA * 0.3);
-    const hYp = this.hanging ? h - 47 : (this.climbing ? h - 45 : h - 26);
-    ctx.beginPath(); ctx.arc(hx, hYp, 2.4, 0, Math.PI * 2); ctx.fill();
+    if (this.hanging) {
+      ctx.beginPath(); ctx.arc(-3, h - 63, 2.4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(3, h - 63, 2.4, 0, Math.PI * 2); ctx.fill();
+    } else {
+      const hx = this.climbing ? -11 : -9 + armA * 0.3;
+      const hYp = this.climbing ? h - 45 : h - 26;
+      ctx.beginPath(); ctx.arc(hx, hYp, 2.4, 0, Math.PI * 2); ctx.fill();
+    }
 
     // Boyun (kısa, kalın — gıdık)
     ctx.strokeStyle = SKIN; ctx.lineWidth = 8;

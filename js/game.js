@@ -39,7 +39,8 @@ class World {
   // --- Yatay halat (monkey bars) ---
   hangBarAt(cx, topY, w) {
     for (const r of this.ropesH) {
-      if (cx > r.x && cx < r.x + r.w && topY > r.y - 34 && topY < r.y + 30)
+      // Alt sınır geniş: ip ortada sarkar + gövde ipin altında asılı kalır (sagY+18)
+      if (cx > r.x && cx < r.x + r.w && topY > r.y - 40 && topY < r.y + 56)
         return r;
     }
     return null;
@@ -358,8 +359,9 @@ const Game = (() => {
     deaths = 0;
     cam.x = 0; cam.y = 0;
     el.level.textContent = `Bölüm ${i + 1}/${LEVELS.length}`;
-    el.name.textContent = def.name;
+    el.name.textContent = def.name + (def.invert === 'lr' ? '  ⇆ TERS!' : '');
     el.deaths.textContent = `Ölüm: ${totalDeaths}`;
+    Input.setInvert(def.invert || null);
     showHint(def.hint);
     state = 'playing';
   }
@@ -436,6 +438,17 @@ const Game = (() => {
   function init() {
     Input.bindTouch();
     Input.onRestart(() => { if (state === 'playing' || state === 'dead') { respawn(); state = 'playing'; } });
+
+    // Uzun basınca "Seç" menüsü / metin seçimi ve çift-dokunuş yakınlaştırmayı engelle
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('selectstart', (e) => e.preventDefault());
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd < 320) e.preventDefault();  // çift-dokunuş zoom'u kes
+      lastTouchEnd = now;
+    }, { passive: false });
 
     document.getElementById('start-btn').addEventListener('click', () => {
       el.overlay.classList.add('hidden');

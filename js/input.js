@@ -15,6 +15,9 @@ const Input = (() => {
   let touchKeys = new Set();
   // Programatik/test enjeksiyonu (eylem adları: left/right/up/down/jump)
   const simKeys = new Set();
+  // Ters kontrol modu (null | 'lr' = sol↔sağ)
+  let invertMode = null;
+  const setInvert = (m) => { invertMode = m || null; };
 
   let jumpPressedThisFrame = false;
   let jumpHeldPrev = false;
@@ -118,6 +121,9 @@ const Input = (() => {
     // Zıplama: klavyede Yukarı/W/Boşluk (masaüstü beklentisi) VEYA dokunmatik 'jump'.
     state.jump  = has('ArrowUp', 'KeyW', 'Space') || touchKeys.has('jump') || simKeys.has('jump');
 
+    // Ters kontrol challenge'ı: sol↔sağ
+    if (invertMode === 'lr') { const t = state.left; state.left = state.right; state.right = t; }
+
     jumpPressedThisFrame = state.jump && !jumpHeldPrev;
   }
   function postUpdate() {
@@ -125,7 +131,7 @@ const Input = (() => {
   }
 
   return {
-    state, onRestart, bindTouch, preUpdate, postUpdate,
+    state, onRestart, bindTouch, preUpdate, postUpdate, setInvert,
     // Test/programatik kontrol
     _sim: { set: (k, v) => { v ? simKeys.add(k) : simKeys.delete(k); }, clear: () => simKeys.clear() },
     get jumpPressed() { return jumpPressedThisFrame; }

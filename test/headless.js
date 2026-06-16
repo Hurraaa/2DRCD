@@ -151,5 +151,39 @@ for (let li = 0; li < LEVELS.length; li++) {
   console.log(`  Bölüm 2 makara testi: yükseldi=${rose} • bayrak=${won}`);
 })();
 
+// --- Hedefe yönelik test: Bölüm 5 maymun-barına otomatik tutunma + geçiş ---
+(function monkeyBars() {
+  const world = new World(LEVELS[4]);
+  const p = world.player;
+  p.x = 300; p.y = 454; p.vx = 0; p.vy = 0;
+  let grabbed = false, crossed = false;
+  for (let f = 0; f < 900; f++) {
+    Input._sim.clear();
+    Input._sim.set('right', true);
+    if (!grabbed && p.grounded) Input._sim.set('jump', true);  // zıpla, sonra otomatik tutun
+    Input.preUpdate(); world.update(); Input.postUpdate();
+    if (p.hanging) grabbed = true;
+    if (grabbed && p.x > 765 && p.grounded) { crossed = true; break; }
+    if (p.dead) { p.reset(); p.x = 300; p.y = 454; grabbed = false; }
+  }
+  check(grabbed, 'Bölüm 5: maymun-barına otomatik tutunulmadı');
+  check(crossed, 'Bölüm 5: maymun-barından karşıya geçilemedi');
+  console.log(`  Bölüm 5 halat testi: tutundu=${grabbed} • geçti=${crossed}`);
+})();
+
+// --- Hedefe yönelik test: Bölüm 6 ters kontrol (sağ bas → sola gider) ---
+(function invertCheck() {
+  const world = new World(LEVELS[5]);
+  const p = world.player; const x0 = p.x;
+  Input.setInvert('lr');
+  for (let f = 0; f < 12; f++) {
+    Input._sim.clear(); Input._sim.set('right', true);
+    Input.preUpdate(); world.update(); Input.postUpdate();
+  }
+  Input.setInvert(null);
+  check(p.x < x0, 'Bölüm 6: ters kontrol çalışmadı (sağ bas → sola gitmeli)');
+  console.log(`  Bölüm 6 ters kontrol testi: sağ→sol=${p.x < x0}`);
+})();
+
 if (failures === 0) console.log('\n✓ Tüm bölümler çökmeden çalıştı, NaN yok.');
 else { console.log(`\n✗ ${failures} sorun bulundu.`); process.exit(1); }

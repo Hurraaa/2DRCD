@@ -65,7 +65,7 @@ const LEVELS = [
     ladders: [], ropesV: [], ropesH: [],
     spikes: [],
     machines: [
-      { type: 'conveyor', x: 300, y: 486, w: 260, h: 16, speed: 1.9 },
+      { type: 'conveyor', x: 300, y: 486, w: 260, h: 16, speed: 5.2 },
       { type: 'crusher', x: 700, w: 70, topY: 300, bottomY: 470, h: 60, period: 130, phase: 0 },
       { type: 'sawblade', ax: 900, ay: 330, bx: 900, by: 460, r: 20, speed: 0.028 },
       { type: 'spring', x: 980, y: 486, w: 50, power: 19 },
@@ -73,36 +73,44 @@ const LEVELS = [
     goal: { x: 1540, y: 240, w: 30, h: 60 },
   },
 
-  /* ---------- BÖLÜM 4: Yokuş (yuvarlanan kaya + kaldıraç köprü + halat) ---------- */
+  /* ---------- BÖLÜM 4: Yokuş (kovalayan kaya + çivi çukurları + sarkaç + tahterevalli) ---------- */
   {
     name: 'Yokuş Tehlikesi',
-    hint: 'Kaya yuvarlanıyor — koş! • Tahterevalli köprüden dengede geç • Halattan yukarı tırman',
-    width: 2200, height: 680,
+    hint: 'Kaya seni kovalıyor — KOŞ! • Çivi çukurlarını atla • Sarkacı zamanla • Dik tahterevalliden hızlı geç • Halattan tırman',
+    width: 2400, height: 680,
     spawn: { x: 40, y: 240 },
     solids: [
       { x: -40, y: 300, w: 420, h: 20 },           // tepe platformu (..380)
-      { x: 980, y: 500, w: 220, h: 180 },          // rampa altı zemin (980..1200)
-      { x: 1400, y: 500, w: 220, h: 180 },         // köprü sonrası zemin (1400..1620)
-      { x: 1560, y: 240, w: 360, h: 20 },          // çıkış platformu (üst)
+      { x: 920, y: 500, w: 260, h: 180 },          // rampa altı zemin A (920..1180)
+      { x: 1320, y: 500, w: 240, h: 180 },         // zemin B (1320..1560)
+      { x: 1760, y: 500, w: 220, h: 180 },         // zemin C (1760..1980)
+      { x: 1900, y: 230, w: 380, h: 20 },          // çıkış platformu (1900..2280)
     ],
     slopes: [
-      { x1: 380, y1: 300, x2: 1000, y2: 500 },     // ana eğik düzlem (rampa)
+      { x1: 380, y1: 300, x2: 940, y2: 500 },      // ana eğik düzlem (rampa)
     ],
     ladders: [],
-    ropesV: [ { x: 1580, y: 240, h: 280 } ],        // çıkış halatı (y240..520)
+    ropesV: [ { x: 1930, y: 230, h: 290 } ],        // çıkış halatı (y230..520)
     ropesH: [],
-    spikes: [ { x: 1200, y: 560, w: 200, h: 60 } ], // köprü altındaki çivili çukur
-    machines: [
-      { type: 'boulder', x: 410, y: 285, r: 26, triggerX: 470, endX: 1010, endY: 470, speed: 3.9 },
-      { type: 'seesaw', x: 1300, y: 500, half: 110, maxAngle: 0.2 },
+    spikes: [
+      { x: 1180, y: 548, w: 140, h: 72 },          // atlanacak çivi çukuru 1 (1180..1320)
+      { x: 1560, y: 548, w: 200, h: 72 },          // tahterevalli altı çivi çukuru (1560..1760)
     ],
-    goal: { x: 1880, y: 180, w: 30, h: 60 },
+    machines: [
+      // Kovalayan kaya: rampadan iner, çukura kadar takip eder (oyuncudan biraz yavaş)
+      { type: 'boulder', x: 410, y: 285, r: 26, triggerX: 460, endX: 1150, endY: 480, speed: 4.0 },
+      // Zemin B üstünde sarkaç — zamanla geç
+      { type: 'pendulum', x: 1440, y: 160, length: 300, ballR: 22, amp: 1.0, speed: 0.034, phase: 0.4 },
+      // Çivi çukurunu köprüleyen DİK tahterevalli — fazla beklersen devrilir
+      { type: 'seesaw', x: 1660, y: 500, half: 115, maxAngle: 0.32 },
+    ],
+    goal: { x: 2220, y: 170, w: 30, h: 60 },
   },
 
   /* ---------- BÖLÜM 5: Final Geçidi (her şey bir arada) ---------- */
   {
     name: 'Final Geçidi',
-    hint: 'Yatay halatta el-ele geç • Fırlayan çivili duvarlardan kaç • Hareketli platformla uçurumu aş',
+    hint: 'ZIPLA ile halata atla (kendi tutunur), ← → ile geç • Çivili duvarlardan kaç • Hareketli platformla uçurumu aş',
     width: 2800, height: 660,
     spawn: { x: 40, y: 440 },
     solids: [
@@ -113,7 +121,7 @@ const LEVELS = [
     slopes: [],
     ladders: [],
     ropesV: [],
-    ropesH: [ { x: 330, y: 400, w: 440 } ],         // monkey bars (330..770), çivi üstü
+    ropesH: [ { x: 300, y: 415, w: 480 } ],         // monkey bars (300..780): zemin üstüne kadar uzanır
     spikes: [
       { x: 340, y: 560, w: 420, h: 60 },           // halat altı çivi tarlası
       { x: 1120, y: 560, w: 360, h: 80 },          // hareketli platform altı çivili uçurum
@@ -127,5 +135,30 @@ const LEVELS = [
       { type: 'crusher', x: 2300, w: 70, topY: 300, bottomY: 470, h: 60, period: 120, phase: 30 },
     ],
     goal: { x: 2680, y: 440, w: 30, h: 60 },
+  },
+
+  /* ---------- BÖLÜM 6: Ters Geçit (TERS KONTROL + acele + asılı gülleler) ---------- */
+  {
+    name: 'Ters Geçit',
+    invert: 'lr',                                   // SOL↔SAĞ ters!
+    hint: '⇆ KONTROLLER TERS! Sağ için SOLA bas • Kaya seni kovalıyor, ACELE ET • Asılı güllelerden zamanla geç',
+    width: 2200, height: 640,
+    spawn: { x: 140, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 2240, h: 140 },         // uzun düz zemin (0..2200)
+    ],
+    slopes: [],
+    ladders: [], ropesV: [], ropesH: [],
+    spikes: [],
+    machines: [
+      // Sürekli kovalayan kaya — acele ettirir (ters kontrolle panik!)
+      { type: 'boulder', x: -40, y: 474, r: 26, triggerX: 60, endX: 2050, endY: 474, speed: 3.5 },
+      // Havadan iple asılı dikenli gülleler (sevilen sarkaçlar)
+      { type: 'pendulum', x: 560,  y: 150, length: 320, ballR: 22, amp: 1.15, speed: 0.033, phase: 0.0 },
+      { type: 'pendulum', x: 980,  y: 150, length: 320, ballR: 22, amp: 1.1,  speed: 0.031, phase: 1.4 },
+      { type: 'pendulum', x: 1400, y: 150, length: 320, ballR: 22, amp: 1.15, speed: 0.034, phase: 0.7 },
+      { type: 'pendulum', x: 1780, y: 150, length: 320, ballR: 22, amp: 1.0,  speed: 0.030, phase: 2.0 },
+    ],
+    goal: { x: 2080, y: 440, w: 30, h: 60 },
   },
 ];
