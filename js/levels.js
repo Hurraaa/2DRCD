@@ -519,4 +519,28 @@ const LEVELS = [
     ],
     goal: { x: 1400, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 19: İki Kutu (2 kutu + 2 plaka → kapı — HESAP) ----------
+     Kapı İKİ plakanın da basılı olmasını ister. Tek başına bir plakada durup
+     diğerini tutamazsın → iki kutuyu da geri plakalara itmen gerekir. */
+  {
+    name: 'İki Kutu',
+    hint: 'Kapı İKİ plaka ister! İki kutuyu da (üstünden atla, geri it) plakalara koy — sonra geç',
+    width: 1560, height: 700,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 1540, h: 200 },          // tek düz koridor (..1500)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [],
+    spikes: [],
+    machines: [
+      { type: 'plate', x: 250, y: 500, w: 60, id: 'A' },
+      { type: 'box', x: 450, y: 440, w: 60, h: 60 },
+      { type: 'plate', x: 640, y: 500, w: 60, id: 'B' },
+      { type: 'box', x: 840, y: 440, w: 60, h: 60 },
+      { type: 'door', x: 1060, y: 200, w: 24, h: 310, links: ['A', 'B'] },  // ikisi de basılıysa açılır
+    ],
+    goal: { x: 1360, y: 440, w: 30, h: 60 },
+  },
 ];

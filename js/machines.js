@@ -813,11 +813,15 @@ const Machines = (() => {
     }
   }
 
-  /* --- Kapı: bağlı plaka basılıyken AÇIK (katı değil), değilse engeller --- */
+  /* --- Kapı: bağlı plaka(lar) basılıyken AÇIK; çoklu bağlantı destekler --- */
   class Door {
-    constructor(d) { this.x = d.x; this.y = d.y; this.w = d.w || 22; this.h = d.h || 130; this.link = d.link || 'A'; this.open = false; this._solid = { x: d.x, y: d.y, w: this.w, h: this.h }; }
+    constructor(d) {
+      this.x = d.x; this.y = d.y; this.w = d.w || 22; this.h = d.h || 130;
+      this.links = d.links || [d.link || 'A'];   // hepsi basılıysa açılır
+      this.open = false; this._solid = { x: d.x, y: d.y, w: this.w, h: this.h };
+    }
     reset() { this.open = false; }
-    update(world) { this.open = !!world.signals[this.link]; }
+    update(world) { this.open = this.links.every(id => !!world.signals[id]); }
     getSolid() { return this.open ? null : this._solid; }
     draw(ctx) {
       // yuva/çerçeve
