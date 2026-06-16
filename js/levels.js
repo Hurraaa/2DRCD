@@ -165,35 +165,36 @@ const LEVELS = [
   /* ---------- BÖLÜM 7: Çöken Zemin (fakeTile öğretir) ---------- */
   {
     name: 'Çöken Zemin',
-    hint: 'ÇÖKEN ZEMİN! Bazı zeminler basınca çöker — üstünde OYALANMA, akıcı yürü • Sonda EN KOLAY görünen yol seni kandırabilir!',
-    width: 2000, height: 640,
+    hint: 'Boşlukları TAM sıçrayarak geç! Ortadaki cazip basamak taşları SAHTE — basan düşer • Sonda geniş köprü de SAHTE; gerçek yol yukarıdaki merdiven!',
+    width: 2300, height: 640,
     spawn: { x: 60, y: 440 },
     solids: [
-      { x: -40, y: 500, w: 360, h: 140 },          // S0 başlangıç (..320)
-      { x: 480, y: 500, w: 300, h: 140 },          // S1 nefeslik (480..780)
-      { x: 880, y: 500, w: 300, h: 140 },          // S2 nefeslik (880..1180)
-      { x: 1540, y: 500, w: 320, h: 140 },         // S3 çıkış zemini (1540..1860)
-      // Ders 3: gerçek (zor) merdiven — sahte geniş platformun ALTERNATİFİ
-      { x: 1220, y: 440, w: 80, h: 16 },           // T1
-      { x: 1340, y: 416, w: 80, h: 16 },           // T2
-      { x: 1460, y: 440, w: 80, h: 16 },           // T3
+      { x: -40, y: 500, w: 400, h: 140 },          // S0 başlangıç (..360)
+      { x: 490, y: 500, w: 170, h: 140 },          // R1 (490..660)
+      { x: 790, y: 500, w: 170, h: 140 },          // R2 (790..960)
+      { x: 1090, y: 500, w: 220, h: 140 },         // S1 nefeslik (1090..1310)
+      // Bölüm B: gerçek (zor) merdiven — sahte köprünün ALTERNATİFİ
+      { x: 1370, y: 452, w: 80, h: 16 },           // T1
+      { x: 1490, y: 424, w: 80, h: 16 },           // T2
+      { x: 1610, y: 452, w: 80, h: 16 },           // T3
+      { x: 1730, y: 500, w: 420, h: 140 },         // S3 çıkış zemini (1730..2150)
     ],
     slopes: [],
     ladders: [], ropesV: [], ropesH: [],
     spikes: [
-      { x: 320, y: 560, w: 160, h: 60 },           // ders 1 çöken zemin altı (320..480)
-      { x: 780, y: 560, w: 100, h: 60 },           // ders 2 çöken zemin altı (780..880)
-      { x: 1180, y: 560, w: 360, h: 60 },          // ders 3 sahte platform/çatal altı (1180..1540)
+      { x: 360, y: 560, w: 130, h: 70 },           // boşluk 1 (360..490)
+      { x: 660, y: 560, w: 130, h: 70 },           // boşluk 2 (660..790)
+      { x: 960, y: 560, w: 130, h: 70 },           // boşluk 3 (960..1090)
+      { x: 1310, y: 560, w: 420, h: 70 },          // Bölüm B çukuru (1310..1730)
     ],
     machines: [
-      // Ders 1: çatlaklı (uyarılı) çöken zemin — bol süre; sadece oyalanan düşer
-      { type: 'fakeTile', x: 320, y: 500, w: 160, h: 16, delay: 48, hint: true },
-      // Ders 2: yolun ortasında uyarısız çöken parça — akıcı yürüyen geçer, duraksayan düşer
-      { type: 'fakeTile', x: 780, y: 500, w: 100, h: 16, delay: 34 },
-      // Ders 3 (ALDATMA): zeminin kesintisiz devamı gibi görünen geniş platform SAHTE.
-      // Gerçek yol yukarıdaki merdiven (T1-T2-T3).
-      { type: 'fakeTile', x: 1180, y: 500, w: 300, h: 16, delay: 30 },
+      // Boşluk ortalarında CAZİP ama sahte basamak taşları — kısa hop yapan düşer
+      { type: 'fakeTile', x: 395, y: 500, w: 60, h: 16, delay: 8, hint: true },   // ilk: uyarılı (öğren)
+      { type: 'fakeTile', x: 695, y: 500, w: 60, h: 16, delay: 7 },
+      { type: 'fakeTile', x: 995, y: 500, w: 60, h: 16, delay: 7 },
+      // Bölüm B (ALDATMA): S1'in kesintisiz devamı gibi duran GENİŞ köprü sahte.
+      { type: 'fakeTile', x: 1310, y: 500, w: 360, h: 16, delay: 22 },
     ],
-    goal: { x: 1740, y: 440, w: 30, h: 60 },
+    goal: { x: 1980, y: 440, w: 30, h: 60 },
   },
 ];
