@@ -260,5 +260,30 @@ for (let li = 0; li < LEVELS.length; li++) {
   console.log(`  Checkpoint testi: işaretlendi=${cp.reached} • spawn=${Math.round(p.spawnX)} (S0 değil)`);
 })();
 
+// --- UCUZLUK DENETÇİSİ: basit stratejiler (düz-yürü/sürekli-zıpla/periyodik) GEÇMEMELİ ---
+(function trivialityAudit() {
+  function trivialWins(li, strat) {
+    const wld = new World(LEVELS[li]); const pl = wld.player;
+    Input.setInvert(LEVELS[li].invert || null);
+    let won = false;
+    for (let f = 0; f < 6000; f++) {
+      Input._sim.clear(); Input._sim.set('right', true);
+      if (strat === 'spam') Input._sim.set('jump', true);
+      else if (strat === 'per' && f % 34 < 10) Input._sim.set('jump', true);
+      Input.preUpdate(); wld.update(); Input.postUpdate();
+      if (pl.won) { won = true; break; }
+      if (pl.dead) { pl.reset(); wld.resetDynamic(); }
+    }
+    Input.setInvert(null);
+    return won;
+  }
+  const easy = [];
+  for (let li = 0; li < LEVELS.length; li++) {
+    if (trivialWins(li, 'walk') || trivialWins(li, 'spam') || trivialWins(li, 'per')) easy.push(li + 1);
+  }
+  if (easy.length) console.log(`\n⚠ UCUZLUK: şu bölümler basit stratejiyle geçiliyor (çok kolay): ${easy.join(', ')}`);
+  else console.log('\n✓ Hiçbir bölüm düz-yürü/sürekli-zıplama ile geçilemiyor.');
+})();
+
 if (failures === 0) console.log('\n✓ Tüm bölümler çökmeden çalıştı, NaN yok.');
 else { console.log(`\n✗ ${failures} sorun bulundu.`); process.exit(1); }
