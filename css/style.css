@@ -57,18 +57,19 @@ html, body {
 
 #hint {
   position: absolute;
-  bottom: 16px; left: 50%;
+  top: 52px; left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,.55);
+  background: rgba(0,0,0,.5);
   color: #fff;
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-size: 15px;
+  padding: 7px 16px;
+  border-radius: 18px;
+  font-size: 14px;
   pointer-events: none;
   opacity: 0;
   transition: opacity .3s;
   text-align: center;
-  max-width: 80%;
+  max-width: 82%;
+  z-index: 12;
 }
 #hint.show { opacity: 1; }
 
@@ -190,8 +191,8 @@ button:active { transform: translateY(4px); box-shadow: 0 1px 0 #b07a18; }
 @media (pointer: coarse) {
   #touch-controls { display: block; }
   /* Oyun tam ekrana sığsın: butonlar köşelerde, oyun alanını küçültmez.
-     object-fit: contain tüm oyun görünümünü en büyük halde gösterir. */
-  #hint { bottom: calc(96px + env(safe-area-inset-bottom)); }
+     object-fit: contain tüm oyun görünümünü en büyük halde gösterir.
+     İpucu üstte (gökyüzü bandı) — yerdeki tuzakları kapatmaz. */
 }
 
 /* Dikey mod uyarısı */
