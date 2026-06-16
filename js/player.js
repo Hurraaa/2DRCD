@@ -28,6 +28,14 @@ class Player {
     this.standingOn = null;
     this.lastGroundY = this.spawnY + this.h;   // gölge için son zemin seviyesi
     this.hangCooldown = 0;                      // halat bırakınca yeniden tutunma gecikmesi
+    // --- Canlılık (premium) ---
+    this.squash = 0;        // iniş ezilmesi (0..1), söner
+    this.lag = 0;           // ikincil hareket: gövdeden gecikmeli (bıyık/ter/göbek)
+    this.prevGrounded = false;
+    this._airVy = 0;
+    this.idleT = 0;         // hareketsizlik sayacı
+    this.idleGes = 0;       // aktif bekleme jesti süresi
+    this.idleKind = 0;      // jest türü
   }
 
   get cx() { return this.x + this.w / 2; }
@@ -52,6 +60,10 @@ class Player {
     const hbar = world.hangBarAt(this.cx, this.y, this.w);
 
     if (this.hangCooldown > 0) this.hangCooldown--;
+
+    // --- Canlılık: iniş ezilmesi söner, ikincil hareket gövdeyi gecikmeli takip eder ---
+    this.squash *= 0.82;
+    this.lag = Engine.approach(this.lag, this.vx, 0.45);
 
     // Yatay halata OTOMATİK tutunma: zıplayıp bara değince kendi yakalar
     // (yukarı tuşu gerekmez). Yükselirken/zirvede yakalar.
@@ -127,7 +139,22 @@ class Player {
 
       if (this.jumpBuffer > 0) this.jumpBuffer--;
 
+      this._airVy = this.vy;                 // iniş darbesi için (çözümden önce)
       this._resolve(world, prevBottom, false);
+
+      // İniş ezilmesi (squash) — sert inişte daha fazla
+      if (this.grounded && !this.prevGrounded && this._airVy > 4) {
+        this.squash = Engine.clamp(this._airVy / 18, 0.2, 0.9);
+      }
+      this.prevGrounded = this.grounded;
+
+      // Bekleme jestleri: yerde dururken seyrek (premium madde 5)
+      const still = this.grounded && Math.abs(this.vx) < 0.3;
+      if (this.idleGes > 0) { this.idleGes--; }
+      else if (still) {
+        this.idleT++;
+        if (this.idleT > 260) { this.idleGes = 80; this.idleKind = (this.idleKind + 1) % 3; this.idleT = 0; }
+      } else { this.idleT = 0; }
 
       // animasyon
       if (this.grounded && Math.abs(this.vx) > 0.4) this.animTime += 0.22;
@@ -229,11 +256,24 @@ class Player {
     ctx.translate(cx, y);
     ctx.scale(f, 1);
 
+    // squash-and-stretch (ayak hizasında pivot): inişte ezilir, havada uzar
+    let sqx = 1, sqy = 1;
+    if (this.squash > 0.02) { sqy = 1 - this.squash * 0.45; sqx = 1 + this.squash * 0.45; }
+    else if (!this.grounded) { const st = Engine.clamp(Math.abs(this.vy) / 16, 0, 1) * 0.16; sqy = 1 + st; sqx = 1 - st; }
+    ctx.translate(0, h); ctx.scale(sqx, sqy); ctx.translate(0, -h);
+
     const walk = (this.grounded && Math.abs(this.vx) > 0.4) || this.climbing || this.hanging;
     const swing = walk ? Math.sin(this.animTime) : 0;
     const legA = swing * 8;
     const armA = -swing * 7;
     const bob = walk ? Math.abs(Math.sin(this.animTime)) * 1.2 : 0; // hafif zıpçıp
+
+    // ikincil hareket / yüz ipuçları (premium)
+    const spd = Math.abs(this.lag);                       // yumuşatılmış hız
+    const trailBack = -Engine.clamp(spd, 0, 4.4) * 0.7;   // ter/bıyık geriye savrulur (yerel -x)
+    const mJit = spd > 3 ? Math.sin(this.animTime * 3) * 0.5 : 0;   // hızda bıyık titreşir
+    const panic = (!this.grounded && this.vy > 9) ? Engine.clamp((this.vy - 9) / 10, 0, 1) : 0;
+    const eyeDart = this.idleGes > 0 ? Math.sin((80 - this.idleGes) * 0.16) * 1.6 : 0;
 
     ctx.translate(0, -bob);
 
@@ -325,23 +365,24 @@ class Player {
     ctx.beginPath(); ctx.moveTo(2, hy - 3.4); ctx.lineTo(5.6, hy - 3.8); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-2.6, hy - 3.3); ctx.lineTo(0, hy - 3.7); ctx.stroke();
 
-    // Gözler (küçük, şaşkın)
+    // Gözler (küçük, şaşkın) — bekleme jestinde sağa-sola süzülür, düşüşte panikle büyür
+    const eR = 1 + panic * 0.8;        // panik büyümesi
     ctx.fillStyle = '#fff';
-    ctx.beginPath(); ctx.arc(4.3, hy, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(0.2, hy + 0.2, 1.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4.3 + eyeDart, hy, 2 * eR, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.2 + eyeDart, hy + 0.2, 1.8 * eR, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#222';
-    ctx.beginPath(); ctx.arc(4.8, hy + 0.3, 1.1, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(0.6, hy + 0.5, 1.0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(4.8 + eyeDart, hy + 0.3, 1.1 * eR, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0.6 + eyeDart, hy + 0.5, 1.0 * eR, 0, Math.PI * 2); ctx.fill();
 
     // Patates burun
     ctx.fillStyle = SKIN_D;
     ctx.beginPath(); ctx.arc(6.5, hy + 3.5, 2.2, 0, Math.PI * 2); ctx.fill();
 
-    // Bıyık
+    // Bıyık (hızda titrer)
     ctx.strokeStyle = HAIR; ctx.lineWidth = 2.6;
     ctx.beginPath();
-    ctx.moveTo(1.5, hy + 5.5);
-    ctx.quadraticCurveTo(4.5, hy + 7, 7, hy + 5);
+    ctx.moveTo(1.5, hy + 5.5 + mJit);
+    ctx.quadraticCurveTo(4.5, hy + 7 + mJit, 7, hy + 5 + mJit);
     ctx.stroke();
 
     // Ağız (endişeli — aşağı kıvrık)
@@ -351,12 +392,13 @@ class Player {
     ctx.quadraticCurveTo(4.5, hy + 7.7, 6.5, hy + 8.7);
     ctx.stroke();
 
-    // Ter damlası ("burada ne işim var" havası)
+    // Ter damlası ("burada ne işim var" havası) — hızla geriye savrulur (ikincil hareket)
+    const tdx = trailBack;
     ctx.fillStyle = 'rgba(120,200,235,0.92)';
     ctx.beginPath();
-    ctx.moveTo(9, hy - 7);
-    ctx.quadraticCurveTo(7, hy - 4.5, 9, hy - 3.5);
-    ctx.quadraticCurveTo(10.6, hy - 4.8, 9, hy - 7);
+    ctx.moveTo(9 + tdx, hy - 7);
+    ctx.quadraticCurveTo(7 + tdx, hy - 4.5, 9 + tdx, hy - 3.5);
+    ctx.quadraticCurveTo(10.6 + tdx, hy - 4.8, 9 + tdx, hy - 7);
     ctx.fill();
 
     ctx.restore();

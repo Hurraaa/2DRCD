@@ -8,6 +8,12 @@ const Engine = (() => {
   const clamp = (v, a, b) => v < a ? a : (v > b ? b : v);
   const lerp = (a, b, t) => a + (b - a) * t;
   const sign = (v) => (v > 0 ? 1 : (v < 0 ? -1 : 0));
+  // hedefe sabit adımla yaklaş (belge 2.2)
+  const approach = (v, target, step) => {
+    if (v < target) return Math.min(v + step, target);
+    if (v > target) return Math.max(v - step, target);
+    return v;
+  };
 
   // --- AABB çarpışma testi ---
   function aabb(ax, ay, aw, ah, bx, by, bw, bh) {
@@ -117,7 +123,7 @@ const Engine = (() => {
   }
 
   return {
-    clamp, lerp, sign, aabb, rectsOverlap, circleRect,
+    clamp, lerp, sign, approach, aabb, rectsOverlap, circleRect,
     resolveX, resolveY, slopeGroundY, roundRect, hazardBeam
   };
 })();
