@@ -543,4 +543,25 @@ const LEVELS = [
     ],
     goal: { x: 1360, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 20: Yüksek Hedef (kutu-basamak — HESAP) ----------
+     Hedef yüksek bir rafta; zeminden zıplama yetmez. Kutuyu GERİ (rafın altına)
+     itip üstüne çıkıp zıplaman gerek. Sağa itmek (kolay yol) işe yaramaz. */
+  {
+    name: 'Yüksek Hedef',
+    hint: 'Hedef çok yüksek! Kutuyu GERİ (sola, rafın altına) it, üstüne çık, oradan rafa zıpla',
+    width: 1200, height: 700,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 1240, h: 200 },          // düz zemin
+      { x: 150, y: 360, w: 210, h: 16 },            // YÜKSEK raf (hedef burada; zeminden ulaşılamaz)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [],
+    spikes: [],
+    machines: [
+      { type: 'box', x: 620, y: 440, w: 60, h: 60 },  // bu kutuyu sola, rafın altına itmelisin
+    ],
+    goal: { x: 230, y: 300, w: 30, h: 60 },            // yüksek rafta
+  },
 ];
