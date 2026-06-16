@@ -564,4 +564,30 @@ const LEVELS = [
     ],
     goal: { x: 230, y: 300, w: 30, h: 60 },            // yüksek rafta
   },
+
+  /* ---------- BÖLÜM 21: Kandırmaca (KUTU bulmacası + PLOT TWIST) ----------
+     "Kutu→plaka→kapı" kalıbını kurar gibi görünür. AMA kapının ardı çivi tuzağı!
+     Kutuyu plakaya itip kapıyı açıp geçen ÖLÜR. Gerçek çözüm: kutuyu BASAMAK yapıp
+     yukarıdaki hedefe çıkmak (kapı sahte yön). Hedef ve çiviler görünür = adil. */
+  {
+    name: 'Kandırmaca',
+    hint: 'Kapı bir TUZAK olabilir... Hedef yukarıda! Kutuyu plakaya değil, BASAMAK olarak kullan',
+    width: 1300, height: 700,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 820, h: 200 },          // başlangıç koridoru (..780)
+      { x: 280, y: 370, w: 180, h: 16 },           // YÜKSEK raf — GERÇEK hedef burada
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [],
+    spikes: [
+      { x: 784, y: 560, w: 460, h: 70 },           // kapının ARDINDA çivi tuzağı (görünür)
+    ],
+    machines: [
+      { type: 'plate', x: 120, y: 500, w: 60, id: 'T' },              // "cazip" plaka (tuzak yönü)
+      { type: 'box', x: 600, y: 440, w: 60, h: 60 },                   // kutu: plakaya DEĞİL, basamak yap
+      { type: 'door', x: 760, y: 200, w: 24, h: 310, link: 'T' },     // kapı: açılınca ardında çivi
+    ],
+    goal: { x: 370, y: 310, w: 30, h: 60 },            // yüksek rafta (kapıdan değil!)
+  },
 ];

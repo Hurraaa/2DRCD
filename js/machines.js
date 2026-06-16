@@ -839,6 +839,41 @@ const Machines = (() => {
     }
   }
 
+  /* --- Mancınık/fırlatma pedi: bağlı plaka (kutuyla) KURULUYKEN üstüne basanı yukarı fırlatır --- */
+  class LaunchPad {
+    constructor(d) {
+      this.x = d.x; this.y = d.y; this.w = d.w || 60; this.armId = d.armId || 'L'; this.power = d.power || 18;
+      this.solid = { x: d.x, y: d.y, w: this.w, h: 14, spring: 0, springAnim: 0 };
+      this.armed = false;
+    }
+    reset() { this.solid.spring = 0; this.solid.springAnim = 0; this.armed = false; }
+    update(world) {
+      this.armed = !!world.signals[this.armId];
+      this.solid.spring = this.armed ? this.power : 0;   // kurulu değilse sıradan platform
+      if (this.solid.springAnim > 0) this.solid.springAnim -= 0.08;
+    }
+    getSolid() { return this.solid; }
+    draw(ctx) {
+      const s = this.solid;
+      // taban
+      ctx.fillStyle = '#444'; ctx.fillRect(s.x - 2, s.y + 10, s.w + 4, 6);
+      if (this.armed) {
+        const sq = Math.max(0, s.springAnim);
+        const top = s.y + sq * 8;
+        ctx.strokeStyle = '#bbb'; ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (let i = 0; i <= 4; i++) { const yy = top + 12 + i * 5; ctx.moveTo(s.x + 4, yy); ctx.lineTo(s.x + s.w - 4, yy + 3); }
+        ctx.stroke();
+        ctx.fillStyle = '#e8413a'; Engine.roundRect(ctx, s.x, top, s.w, 12, 4); ctx.fill();
+        ctx.fillStyle = '#ffd35a'; ctx.font = 'bold 10px sans-serif'; ctx.fillText('▲', s.x + s.w / 2 - 4, top + 9);
+      } else {
+        // kurulu değil: sönük düz ped
+        ctx.fillStyle = '#7a6c52'; Engine.roundRect(ctx, s.x, s.y, s.w, 12, 3); ctx.fill();
+        ctx.fillStyle = '#5a5040'; ctx.fillRect(s.x, s.y, s.w, 4);
+      }
+    }
+  }
+
   const registry = {
     pendulum: Pendulum, pulley: Pulley, conveyor: Conveyor,
     spring: Spring, movingPlatform: MovingPlatform, crusher: Crusher,
@@ -847,7 +882,7 @@ const Machines = (() => {
     fakeTile: FakeTile, fallingRock: FallingRock, popSpikes: PopSpikes,
     dartTrap: DartTrap, iceFloor: IceFloor, decoyFlag: DecoyFlag,
     // Etkileşimli (hesap gerektiren)
-    box: Box, plate: PressurePlate, door: Door
+    box: Box, plate: PressurePlate, door: Door, launchpad: LaunchPad
   };
 
   function create(def) {
