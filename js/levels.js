@@ -165,36 +165,34 @@ const LEVELS = [
   /* ---------- BÖLÜM 7: Çöken Zemin (fakeTile öğretir) ---------- */
   {
     name: 'Çöken Zemin',
-    hint: 'Boşlukları TAM sıçrayarak geç! Ortadaki cazip basamak taşları SAHTE — basan düşer • Sonda geniş köprü de SAHTE; gerçek yol yukarıdaki merdiven!',
-    width: 2300, height: 640,
+    hint: 'Tek yol çöken taşlar! Üstünde DURMA, taştan taşa akıcı zıpla • Sonda geniş köprü SAHTE; gerçek yol yukarıdaki merdiven!',
+    width: 2650, height: 640,
     spawn: { x: 60, y: 440 },
     solids: [
       { x: -40, y: 500, w: 400, h: 140 },          // S0 başlangıç (..360)
-      { x: 490, y: 500, w: 170, h: 140 },          // R1 (490..660)
-      { x: 790, y: 500, w: 170, h: 140 },          // R2 (790..960)
-      { x: 1090, y: 500, w: 220, h: 140 },         // S1 nefeslik (1090..1310)
+      { x: 1400, y: 500, w: 220, h: 140 },         // S1 nefeslik (1400..1620)
       // Bölüm B: gerçek (zor) merdiven — sahte köprünün ALTERNATİFİ
-      { x: 1370, y: 452, w: 80, h: 16 },           // T1
-      { x: 1490, y: 424, w: 80, h: 16 },           // T2
-      { x: 1610, y: 452, w: 80, h: 16 },           // T3
-      { x: 1730, y: 500, w: 420, h: 140 },         // S3 çıkış zemini (1730..2150)
+      { x: 1680, y: 452, w: 80, h: 16 },           // T1
+      { x: 1800, y: 424, w: 80, h: 16 },           // T2
+      { x: 1920, y: 452, w: 80, h: 16 },           // T3
+      { x: 2040, y: 500, w: 500, h: 140 },         // S3 çıkış zemini (2040..2540)
     ],
     slopes: [],
     ladders: [], ropesV: [], ropesH: [],
     spikes: [
-      { x: 360, y: 560, w: 130, h: 70 },           // boşluk 1 (360..490)
-      { x: 660, y: 560, w: 130, h: 70 },           // boşluk 2 (660..790)
-      { x: 960, y: 560, w: 130, h: 70 },           // boşluk 3 (960..1090)
-      { x: 1310, y: 560, w: 420, h: 70 },          // Bölüm B çukuru (1310..1730)
+      { x: 360, y: 560, w: 1040, h: 70 },          // Bölüm A çukuru (360..1400) — tek yol taşlar
+      { x: 1620, y: 560, w: 420, h: 70 },          // Bölüm B çukuru (1620..2040)
     ],
     machines: [
-      // Boşluk ortalarında CAZİP ama sahte basamak taşları — kısa hop yapan düşer
-      { type: 'fakeTile', x: 395, y: 500, w: 60, h: 16, delay: 8, hint: true },   // ilk: uyarılı (öğren)
-      { type: 'fakeTile', x: 695, y: 500, w: 60, h: 16, delay: 7 },
-      { type: 'fakeTile', x: 995, y: 500, w: 60, h: 16, delay: 7 },
+      // Bölüm A: ÇÖKEN basamak taşları (tek geçiş yolu). Her boşluk ~140px (oran ~0.80 = SIKI):
+      // tam-kenardan, near-max zıplama gerektirir (yetenek+hesap). İki taş birden atlanamaz.
+      { type: 'fakeTile', x: 500, y: 500, w: 85, h: 16, delay: 26, hint: true },  // ilk: uyarılı (öğren)
+      { type: 'fakeTile', x: 725, y: 500, w: 85, h: 16, delay: 24 },
+      { type: 'fakeTile', x: 950, y: 500, w: 85, h: 16, delay: 24 },
+      { type: 'fakeTile', x: 1175, y: 500, w: 85, h: 16, delay: 24 },
       // Bölüm B (ALDATMA): S1'in kesintisiz devamı gibi duran GENİŞ köprü sahte.
-      { type: 'fakeTile', x: 1310, y: 500, w: 360, h: 16, delay: 22 },
+      { type: 'fakeTile', x: 1620, y: 500, w: 360, h: 16, delay: 22 },
     ],
-    goal: { x: 1980, y: 440, w: 30, h: 60 },
+    goal: { x: 2400, y: 440, w: 30, h: 60 },
   },
 ];
