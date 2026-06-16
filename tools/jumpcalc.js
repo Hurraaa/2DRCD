@@ -65,19 +65,21 @@ function jumpProfile() {
   console.log('');
 }
 
-// --- Bir boşluğun değerlendirmesi ---
+// --- Bir boşluğun değerlendirmesi (belge 2.4: piksel-marjı M + normalize sıkılık S) ---
 // gap: yatay boşluk (px), dy: iniş platformu yükseklik farkı (negatif=yukarı)
 function verdictGap(gap, dy = 0) {
-  const max = maxReach(dy);                  // tam zıplama erişimi
-  const ratio = gap / max;                   // sıkılık (1.0 = sınırda)
+  const max = maxReach(dy);                  // tam zıplama erişimi (Rmax)
+  const M = max - gap;                       // piksel-marjı (Rmax - gerekli)
+  const S = max > 0 ? 1 - M / max : 1;        // normalize sıkılık
   let tag, note;
   if (gap <= 0) { tag = 'BİTİŞİK'; note = 'boşluk yok'; }
-  else if (ratio > 1.0) { tag = 'İMKANSIZ'; note = `azami ${max.toFixed(0)}px < ${gap.toFixed(0)}px` ; }
-  else if (ratio > 0.92) { tag = 'ÇOK SIKI'; note = 'tam kenardan, frame-hassas (riskli)'; }
-  else if (ratio > 0.75) { tag = 'SIKI/İYİ'; note = 'kenardan tam zıplama gerek (yetenek+hesap)'; }
-  else if (ratio > 0.5) { tag = 'ORTA'; note = 'rahat zıplama'; }
-  else { tag = 'KOLAY'; note = 'neredeyse önemsiz'; }
-  return { gap, dy, max, ratio, tag, note };
+  else if (M < 0) { tag = 'İMKANSIZ'; note = `azami ${max.toFixed(0)}px < ${gap.toFixed(0)}px (M=${M.toFixed(0)})`; }
+  else if (M < 8) { tag = 'AŞIRI SIKI'; note = `M=${M.toFixed(0)}px — piksel-hassas (yalnız gizli/usta)`; }
+  else if (M < 20) { tag = 'ÇOK SIKI'; note = `M=${M.toFixed(0)}px — kısa ve seyrek kullan`; }
+  else if (M < 40) { tag = 'SIKI'; note = `M=${M.toFixed(0)}px — kenardan tam zıplama (yetenek+hesap)`; }
+  else if (M < 70) { tag = 'ORTA'; note = `M=${M.toFixed(0)}px — rahat zıplama`; }
+  else { tag = 'KOLAY'; note = `M=${M.toFixed(0)}px — neredeyse önemsiz`; }
+  return { gap, dy, max, margin: M, ratio: S, tag, note };
 }
 
 // İki taş arasının "atlanabilir mi" (skip exploit) kontrolü:
