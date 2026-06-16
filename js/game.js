@@ -377,7 +377,17 @@ class World {
 const Game = (() => {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-  const cam = { x: 0, y: 0 };
+  const cam = { x: 0, y: 0, lookX: 0, shake: 0 };
+  let dpr = 1;
+
+  // Net çizim: canvas tamponu DPR ile ölçeklenir (mobilde keskin çizgi/yazı)
+  function setupCanvas() {
+    dpr = Math.min((typeof window !== 'undefined' && window.devicePixelRatio) || 1, 2);
+    canvas.width = Math.floor(VIEW_W * dpr);
+    canvas.height = Math.floor(VIEW_H * dpr);
+  }
+  // Kamera sarsıntısı tetikleyici (olaylara göre büyüklük)
+  function shake(mag) { cam.shake = Math.max(cam.shake, mag); }
 
   let world = null;
   let levelIdx = 0;
@@ -429,10 +439,15 @@ const Game = (() => {
 
   function updateCamera() {
     const p = world.player;
-    const tx = Engine.clamp(p.cx - VIEW_W / 2, 0, Math.max(0, world.width - VIEW_W));
+    // Look-ahead: kamera hareket yönüne doğru alan açar (belge 8)
+    const targetLook = Engine.clamp(p.vx * 22, -120, 120);
+    cam.lookX += (targetLook - cam.lookX) * 0.06;
+    const tx = Engine.clamp(p.cx + cam.lookX - VIEW_W / 2, 0, Math.max(0, world.width - VIEW_W));
     const ty = Engine.clamp(p.cy - VIEW_H / 2 - 30, 0, Math.max(0, world.height - VIEW_H));
     cam.x += (tx - cam.x) * 0.12;
-    cam.y += (ty - cam.y) * 0.12;
+    // Dikey: yerdeyken sakin, havada/düşüşte daha yumuşak
+    cam.y += (ty - cam.y) * (p.grounded ? 0.08 : 0.05);
+    if (cam.shake > 0.1) cam.shake *= 0.86; else cam.shake = 0;   // hızla sön
   }
 
   function step() {
@@ -441,7 +456,7 @@ const Game = (() => {
     if (state === 'playing') {
       world.update();
       updateCamera();
-      if (world.player.dead) { state = 'dead'; deadTimer = 38; deaths++; totalDeaths++; el.deaths.textContent = `Ölüm: ${totalDeaths}`; }
+      if (world.player.dead) { state = 'dead'; deadTimer = 38; deaths++; totalDeaths++; el.deaths.textContent = `Ölüm: ${totalDeaths}`; shake(6); }
       else if (world.player.won) {
         if (levelIdx + 1 >= LEVELS.length) { state = 'win'; showWin(); }
         else { state = 'clear'; showClear(); }
@@ -467,6 +482,11 @@ const Game = (() => {
   }
 
   function render() {
+    // DPR taban dönüşümü + kamera sarsıntısı (her kare)
+    let shx = 0, shy = 0;
+    if (cam.shake > 0.1) { shx = (Math.random() - 0.5) * cam.shake * 2; shy = (Math.random() - 0.5) * cam.shake * 2; }
+    ctx.setTransform(dpr, 0, 0, dpr, Math.round(shx * dpr), Math.round(shy * dpr));
+
     if (world) world.draw(ctx, cam);
     else { ctx.fillStyle = '#79cfd4'; ctx.fillRect(0, 0, VIEW_W, VIEW_H); }
 
@@ -492,6 +512,11 @@ const Game = (() => {
   }
 
   function init() {
+    setupCanvas();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', setupCanvas);
+      window.addEventListener('orientationchange', () => setTimeout(setupCanvas, 300));
+    }
     Input.bindTouch();
     Input.onRestart(() => { if (state === 'playing' || state === 'dead') { respawn(); state = 'playing'; } });
 
