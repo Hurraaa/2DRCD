@@ -197,4 +197,37 @@ const LEVELS = [
     ],
     goal: { x: 2400, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 8: Tepeden Gelen (fallingRock öğretir) ----------
+     Göster → Denet → Çarpıt. Kayanın altında DURMA; akıcı yürü.
+     Uyarı süresi (delay) kademeli azalır. Çarpıt: üç yakın kayanın
+     arasındaki "güvenli" boşluğa sığınan, oradaki kayayı tetikleyip ölür. */
+  {
+    name: 'Tepeden Gelen',
+    hint: 'Tavandan kaya düşer! Kayanın altında DURMA, akıcı yürü • Kayalar arası boşluk GÜVENLİ DEĞİL',
+    width: 2120, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 960, h: 160 },          // G1: başlangıç + öğretme koridoru (..920)
+      { x: 1060, y: 500, w: 920, h: 160 },         // G2: koridor 2 + çarpıt + final (1060..1980)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1120, y: 500 } ],          // sıçrama sonrası ara kayıt
+    spikes: [
+      { x: 920, y: 560, w: 140, h: 70 },           // tek SIKI sıçrama (920..1060, oran 0.80)
+    ],
+    machines: [
+      // Öğretme koridoru: uzun uyarılı ilk kaya, sonra biraz daha hızlı
+      { type: 'fallingRock', x: 560,  topY: 80, groundY: 500, triggerX: 540,  r: 24, delay: 28 },
+      { type: 'fallingRock', x: 770,  topY: 80, groundY: 500, triggerX: 750,  r: 24, delay: 20 },
+      // Sıçrama sonrası koridor: uyarı süresi azalır (ritmi kesme)
+      { type: 'fallingRock', x: 1240, topY: 80, groundY: 500, triggerX: 1220, r: 24, delay: 18 },
+      { type: 'fallingRock', x: 1440, topY: 80, groundY: 500, triggerX: 1420, r: 24, delay: 16 },
+      // ÇARPIT: üç yakın kaya — ortadaki boşluğa "sığınan" o kayayı tetikleyip ölür
+      { type: 'fallingRock', x: 1640, topY: 80, groundY: 500, triggerX: 1622, r: 24, delay: 14 },
+      { type: 'fallingRock', x: 1730, topY: 80, groundY: 500, triggerX: 1712, r: 24, delay: 14 },
+      { type: 'fallingRock', x: 1820, topY: 80, groundY: 500, triggerX: 1802, r: 24, delay: 14 },
+    ],
+    goal: { x: 1920, y: 440, w: 30, h: 60 },
+  },
 ];
