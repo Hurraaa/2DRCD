@@ -386,4 +386,36 @@ const LEVELS = [
     ],
     goal: { x: 1870, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 14: Çifte Ritim (pendulum + crusher kombinasyonu) ----------
+     İki periyodik tehlike: salınan top + ezici pres. Zamanlama dersi —
+     güvenli pencereyi oku, aralarda bekle. Çarpıt: ikisi yan yana. */
+  {
+    name: 'Çifte Ritim',
+    hint: 'Salınan toplar ve eziciler periyodik — güvenli pencereyi bekle, sonra geç • Sonda ikisi birden',
+    width: 2250, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 420, h: 160 },          // S0 (..380)
+      { x: 380, y: 500, w: 560, h: 160 },          // sarkaç bölümü (380..940)
+      { x: 940, y: 500, w: 500, h: 160 },          // ezici bölümü (940..1440)
+      { x: 1570, y: 500, w: 560, h: 160 },          // çarpıt + final (1570..2130)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1640, y: 500 } ],
+    spikes: [
+      { x: 1440, y: 560, w: 130, h: 70 },           // gerçek boşluk (1440..1570)
+    ],
+    machines: [
+      // Tek sarkaç (göster) — kısa ip = dar tehlike bölgesi, net geçiş penceresi
+      { type: 'pendulum', x: 620, y: 150, length: 310, ballR: 22, amp: 0.95, speed: 0.030, phase: 0 },
+      // Eziciler (aralıklı, güvenli faza zamanla)
+      { type: 'crusher', x: 1080, w: 70, topY: 300, bottomY: 470, h: 60, period: 130, phase: 0 },
+      { type: 'crusher', x: 1300, w: 70, topY: 300, bottomY: 470, h: 60, period: 130, phase: 65 },
+      // ÇARPIT: sarkaç + ezici (aralıklı ama ikisini birden zamanla)
+      { type: 'pendulum', x: 1740, y: 150, length: 310, ballR: 22, amp: 0.95, speed: 0.031, phase: 0.6 },
+      { type: 'crusher', x: 1980, w: 70, topY: 300, bottomY: 470, h: 60, period: 130, phase: 20 },
+    ],
+    goal: { x: 2040, y: 440, w: 30, h: 60 },
+  },
 ];
