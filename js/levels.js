@@ -466,4 +466,34 @@ const LEVELS = [
     ],
     goal: { x: 1400, y: 240, w: 30, h: 60 },         // üst ledge'de
   },
+
+  /* ---------- BÖLÜM 17: Testere Tarlası (sawblade + SIKI sıçrama) ----------
+     Zamanlama (testere yukarıdayken geç) + hassasiyet (kenardan sıçra).
+     Aralarda güvenli bekleme noktası. */
+  {
+    name: 'Testere Tarlası',
+    hint: 'Testereler inip kalkar — YUKARIDAYKEN geç • Boşlukları tam kenardan SIKI zıpla',
+    width: 2400, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 420, h: 160 },          // S0 (..380)
+      { x: 380, y: 500, w: 560, h: 160 },          // testere bölümü (380..940)
+      { x: 1080, y: 500, w: 560, h: 160 },          // testere 2 + checkpoint (1080..1640)
+      { x: 1780, y: 500, w: 500, h: 160 },          // çarpıt + final (1780..2280)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1130, y: 500 } ],
+    spikes: [
+      { x: 940, y: 560, w: 140, h: 70 },            // SIKI sıçrama 1 (940..1080, oran ~0.80)
+      { x: 1640, y: 560, w: 140, h: 70 },           // SIKI sıçrama 2 (1640..1780)
+    ],
+    machines: [
+      // Dikey gidip gelen testereler — yukarıdayken (y küçük) altından geç
+      { type: 'sawblade', ax: 600,  ay: 325, bx: 600,  by: 460, r: 20, speed: 0.026, phase: 0 },   // göster
+      { type: 'sawblade', ax: 820,  ay: 325, bx: 820,  by: 460, r: 20, speed: 0.026, phase: 1.6 }, // denet
+      { type: 'sawblade', ax: 1300, ay: 325, bx: 1300, by: 460, r: 20, speed: 0.027, phase: 0.6 }, // gap1 sonrası
+      { type: 'sawblade', ax: 1980, ay: 325, bx: 1980, by: 460, r: 20, speed: 0.027, phase: 1.1 }, // çarpıt
+    ],
+    goal: { x: 2150, y: 440, w: 30, h: 60 },
+  },
 ];
