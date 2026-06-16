@@ -489,16 +489,18 @@ const Machines = (() => {
       this.respawnT = d.respawn || 150;                // tekrar belirme
       this.hint = d.hint || false;                     // çatlak ipucu göster?
       this.solid = { x: this.x, y: this.y, w: this.w, h: this.h };
-      this.state = 'idle'; this.timer = 0; this.shake = 0; this.fallY = 0; this.fallV = 0;
+      this.state = 'idle'; this.timer = 0; this.shake = 0; this.dip = 0; this.fallY = 0; this.fallV = 0;
     }
-    reset() { this.state = 'idle'; this.timer = 0; this.shake = 0; this.fallY = 0; this.fallV = 0; }
+    reset() { this.state = 'idle'; this.timer = 0; this.shake = 0; this.dip = 0; this.fallY = 0; this.fallV = 0; }
     update(world) {
       const onIt = world.player.standingOn === this.solid;
       if (this.state === 'idle') {
-        if (onIt) { this.state = 'crack'; this.timer = this.delay; }
+        this.dip = 0;
+        if (onIt) { this.state = 'crack'; this.timer = this.delay; if (world) world.burst(this.x + this.w / 2, this.y + this.h, 3, '#5b5f66', 3, 0.6); }
       } else if (this.state === 'crack') {
         this.shake = Math.sin(this.timer * 0.9) * 2;
-        if (--this.timer <= 0) { this.state = 'gone'; this.timer = this.respawnT; this.shake = 0; this.fallY = 0; this.fallV = 0; }
+        this.dip = (1 - this.timer / this.delay) * 4;     // "ayağının altı kayıyor" — görsel çukurlaşma
+        if (--this.timer <= 0) { this.state = 'gone'; this.timer = this.respawnT; this.shake = 0; this.dip = 0; this.fallY = 0; this.fallV = 0; }
       } else if (this.state === 'gone') {
         this.fallV += 0.6; this.fallY += this.fallV;   // düşen enkaz animasyonu
         if (--this.timer <= 0) this.state = 'idle';
@@ -517,16 +519,17 @@ const Machines = (() => {
         return;
       }
       const sx = this.x + this.shake;
+      const ty = this.y + this.dip;                    // basınca görsel çukurlaşma
       // NORMAL taş platform gibi (şüphe çekmesin)
       ctx.fillStyle = '#6b6f78';
-      Engine.roundRect(ctx, sx, this.y, this.w, this.h, 4); ctx.fill();
-      ctx.fillStyle = '#868b95'; ctx.fillRect(sx, this.y, this.w, 5);
-      ctx.fillStyle = '#565a62'; ctx.fillRect(sx, this.y + this.h - 4, this.w, 4);
+      Engine.roundRect(ctx, sx, ty, this.w, this.h, 4); ctx.fill();
+      ctx.fillStyle = '#868b95'; ctx.fillRect(sx, ty, this.w, 5);
+      ctx.fillStyle = '#565a62'; ctx.fillRect(sx, ty + this.h - 4, this.w, 4);
       if (this.state === 'crack' || this.hint) {       // çatlaklar (basınca belli olur)
         ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(sx + this.w * 0.3, this.y); ctx.lineTo(sx + this.w * 0.42, this.y + this.h);
-        ctx.moveTo(sx + this.w * 0.62, this.y); ctx.lineTo(sx + this.w * 0.52, this.y + this.h);
+        ctx.moveTo(sx + this.w * 0.3, ty); ctx.lineTo(sx + this.w * 0.42, ty + this.h);
+        ctx.moveTo(sx + this.w * 0.62, ty); ctx.lineTo(sx + this.w * 0.52, ty + this.h);
         ctx.stroke();
       }
     }
