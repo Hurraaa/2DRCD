@@ -204,31 +204,29 @@ const LEVELS = [
      arasındaki "güvenli" boşluğa sığınan, oradaki kayayı tetikleyip ölür. */
   {
     name: 'Tepeden Gelen',
-    hint: 'Tavandan kaya düşer! Kayanın altında DURMA, akıcı yürü • Kayalar arası boşluk GÜVENLİ DEĞİL',
-    width: 2120, height: 680,
+    hint: 'Tavandan kaya YOLUNA düşer! Körü körüne yürüme — DUR, düşmesini bekle, sonra geç (ya da zıpla)',
+    width: 2400, height: 680,
     spawn: { x: 60, y: 440 },
     solids: [
-      { x: -40, y: 500, w: 960, h: 160 },          // G1: başlangıç + öğretme koridoru (..920)
-      { x: 1060, y: 500, w: 920, h: 160 },         // G2: koridor 2 + çarpıt + final (1060..1980)
+      { x: -40, y: 500, w: 1600, h: 160 },         // G1: öğretme koridoru (..1560)
+      { x: 1690, y: 500, w: 620, h: 160 },         // G2: çarpıt + final (1690..2310)
     ],
     slopes: [], ladders: [], ropesV: [], ropesH: [],
-    checkpoints: [ { x: 1120, y: 500 } ],          // sıçrama sonrası ara kayıt
+    checkpoints: [ { x: 1740, y: 500 } ],          // sıçrama sonrası ara kayıt (çarpıttan ÖNCE)
     spikes: [
-      { x: 920, y: 560, w: 140, h: 70 },           // tek SIKI sıçrama (920..1060, oran 0.80)
+      { x: 1560, y: 560, w: 130, h: 70 },          // tek SIKI sıçrama (1560..1690)
     ],
     machines: [
-      // Öğretme koridoru: uzun uyarılı ilk kaya, sonra biraz daha hızlı
-      { type: 'fallingRock', x: 560,  topY: 80, groundY: 500, triggerX: 540,  r: 24, delay: 28 },
-      { type: 'fallingRock', x: 770,  topY: 80, groundY: 500, triggerX: 750,  r: 24, delay: 20 },
-      // Sıçrama sonrası koridor: uyarı süresi azalır (ritmi kesme)
-      { type: 'fallingRock', x: 1240, topY: 80, groundY: 500, triggerX: 1220, r: 24, delay: 18 },
-      { type: 'fallingRock', x: 1440, topY: 80, groundY: 500, triggerX: 1420, r: 24, delay: 16 },
-      // ÇARPIT: üç yakın kaya — ortadaki boşluğa "sığınan" o kayayı tetikleyip ölür
-      { type: 'fallingRock', x: 1640, topY: 80, groundY: 500, triggerX: 1622, r: 24, delay: 14 },
-      { type: 'fallingRock', x: 1730, topY: 80, groundY: 500, triggerX: 1712, r: 24, delay: 14 },
-      { type: 'fallingRock', x: 1820, topY: 80, groundY: 500, triggerX: 1802, r: 24, delay: 14 },
+      // Tetik kayadan ~176px ÖNCE → kaya oyuncunun yoluna düşer.
+      // Sabit hızla yürüyen tam kayanın yerinde onun seviyesinde olur (ölür);
+      // çözüm: DUR + bekle, ya da zıplayarak zamanla.
+      { type: 'fallingRock', x: 620,  topY: 80, groundY: 500, triggerX: 444,  r: 24, delay: 10 }, // göster
+      { type: 'fallingRock', x: 1000, topY: 80, groundY: 500, triggerX: 824,  r: 24, delay: 8 },
+      { type: 'fallingRock', x: 1380, topY: 80, groundY: 500, triggerX: 1204, r: 24, delay: 7 },
+      // ÇARPIT: sıçrayıp checkpoint'te rahatlayınca, hemen ilerde yola düşen kaya
+      { type: 'fallingRock', x: 1980, topY: 80, groundY: 500, triggerX: 1804, r: 24, delay: 7 },
     ],
-    goal: { x: 1920, y: 440, w: 30, h: 60 },
+    goal: { x: 2200, y: 440, w: 30, h: 60 },
   },
 
   /* ---------- BÖLÜM 9: Buz Üstünde (iceFloor öğretir) ----------
