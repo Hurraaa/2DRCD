@@ -298,4 +298,35 @@ const LEVELS = [
     ],
     goal: { x: 2170, y: 440, w: 30, h: 60 },
   },
+
+  /* ---------- BÖLÜM 11: Duvardan Ok (dartTrap öğretir) ----------
+     Görünmez tel geçilince duvardan yatay ok fırlar → ÜSTÜNDEN ZIPLA (zamanla).
+     Okun fırlama noktası, tepki için yeterince uzakta (belge 11.2: ~0.33-0.5 sn).
+     Göster/denet artan sıkılıkla; çarpıt: boşluktan inip rahatlarken tel. */
+  {
+    name: 'Duvardan Ok',
+    hint: 'Görünmez tel geçilince duvardan ok fırlar — ÜSTÜNDEN ZIPLA, zamanla • Boşluk sonrası rahatlama!',
+    width: 2420, height: 680,
+    spawn: { x: 60, y: 440 },
+    solids: [
+      { x: -40, y: 500, w: 400, h: 160 },          // S0 (..360)
+      { x: 360, y: 500, w: 940, h: 160 },          // ok koridoru 1 (360..1300)
+      { x: 1430, y: 500, w: 330, h: 160 },          // ok koridoru 2 + checkpoint (1430..1760)
+      { x: 1890, y: 500, w: 410, h: 160 },          // çarpıt + final (1890..2300)
+    ],
+    slopes: [], ladders: [], ropesV: [], ropesH: [],
+    checkpoints: [ { x: 1470, y: 500 } ],
+    spikes: [
+      { x: 1300, y: 560, w: 130, h: 70 },           // gerçek boşluk (1300..1430)
+      { x: 1760, y: 560, w: 130, h: 70 },           // gerçek boşluk (1760..1890)
+    ],
+    machines: [
+      // dir -1: ok sağdaki duvardan SOLA (gelen oyuncuya) fırlar — önceden görünür, adil
+      { type: 'dartTrap', x: 820,  y: 472, dir: -1, tripX1: 460,  tripX2: 520,  speed: 7, range: 480 }, // göster
+      { type: 'dartTrap', x: 1240, y: 472, dir: -1, tripX1: 900,  tripX2: 960,  speed: 7, range: 480 }, // denet
+      { type: 'dartTrap', x: 1755, y: 472, dir: -1, tripX1: 1500, tripX2: 1550, speed: 7, range: 480 }, // sıkı
+      { type: 'dartTrap', x: 2280, y: 472, dir: -1, tripX1: 1960, tripX2: 2010, speed: 7, range: 480 }, // çarpıt
+    ],
+    goal: { x: 2200, y: 440, w: 30, h: 60 },
+  },
 ];
